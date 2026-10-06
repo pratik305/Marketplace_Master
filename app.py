@@ -1,11 +1,11 @@
 """Marketplace Template Filler - Streamlit entry point."""
 import streamlit as st
 
-from src.mapper import name_match
 from src.master_reader import MasterError, read_master
 from src.result import build_rows
 from src.template_reader import TemplateError, read_template
 from src.xlsm_writer import WriterError, fill_template
+from ui import mapping_page
 
 st.set_page_config(page_title="Marketplace Template Filler", layout="wide")
 st.title("Marketplace Template Filler")
@@ -26,6 +26,8 @@ if start:
         st.session_state["template_bytes"] = template_file.getvalue()
         st.session_state["template_name"] = template_file.name
         st.session_state["template"] = read_template(st.session_state["template_bytes"])
+        for k in ("mapping", "mapping_source", "mapping_conf"):
+            st.session_state.pop(k, None)
     except (MasterError, TemplateError) as err:
         st.session_state.pop("template", None)
         st.error(str(err))
@@ -49,9 +51,9 @@ if "template" in st.session_state and "master" in st.session_state:
     with st.expander("Master preview"):
         st.dataframe(master.head(20), use_container_width=True)
 
+    mapping = mapping_page.render(tpl, master)
     st.subheader("Download")
-    mapping = name_match(tpl.columns, master.columns)
-    st.caption(f"{len(mapping)} template columns matched a master column by name. "
+    st.caption(f"{len(mapping)} template columns are mapped to a master column. "
                "Defaults pre-filled in the template are kept.")
     try:
         rows = build_rows(tpl, master, mapping)

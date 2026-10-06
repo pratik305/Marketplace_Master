@@ -29,7 +29,7 @@ Build mode: fast
   Learner check: Download the file, open it in Excel, and confirm it opens without a repair message, the dropdown arrows still work, and the first rows contain your master's data.
   Commit: `Add direct-XML template writer and download`
 
-- [ ] **3. The AI proposes a mapping and you can correct it**
+- [x] **3. The AI proposes a mapping and you can correct it**
   Becomes usable: After upload, a mapping table shows each template column's proposed master column (name matching first, Claude for the rest); you can change any pair, and the download uses your mapping.
   Why now: First half of the kernel (the AI-assisted mapping) and the first place the Claude API is used, so key handling and fallback get tested early.
   PRD ref: `prd.md > Column mapping`
