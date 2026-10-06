@@ -39,7 +39,7 @@ Build mode: fast
   Learner check: Upload both files, read the proposed mapping, change one wrong pair, and download; say whether the proposed pairs make sense for your jewelry columns.
   Commit: `Add Claude-assisted column mapping with editable table`
 
-- [ ] **4. The tool asks you about the columns the master can't fill**
+- [x] **4. The tool asks you about the columns the master can't fill**
   Becomes usable: One required, unmapped column per screen with progress, three answer modes (same for all rows, depends on a master column, skip), dropdown columns limited to the allowed values, and an optional "also ask optional columns" button. Your answers fill the rows.
   Why now: This is the unique kernel (the column-by-column interview). It comes right after mapping so the rest of the build can polish a working core.
   PRD ref: `prd.md > Asking about missing columns`, `prd.md > The Core Journey` (step 4)
@@ -71,7 +71,7 @@ Build mode: fast
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 3 (upload, download, and AI mapping)
+- [x] Early usable behavior explored — after slice 3 (upload, download, and AI mapping)
 - [ ] Final kick-the-tires exploration and feedback completed
 
 ## Final Review
