@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marketplace Template Filler - Spec</title>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--ink:#1d2330;--mute:#5d6678;--line:#dcd8cc;--accent:#1f6feb;--warn:#b7791f}
+@media(prefers-color-scheme:dark){:root{--bg:#14171d;--card:#1d222b;--ink:#e8eaee;--mute:#9aa3b2;--line:#323946;--accent:#6aa5ff;--warn:#e3b341}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,Segoe UI,sans-serif}
+main{max-width:940px;margin:0 auto;padding:24px 16px 64px}
+h1{margin:0 0 4px;font-size:1.7rem}.sub{color:var(--mute);margin:0 0 20px}
+.badge{display:inline-block;font-size:.75rem;border:1px solid var(--line);border-radius:99px;padding:2px 10px;color:var(--mute);margin-bottom:8px}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+h2{margin:0 0 8px;font-size:1.1rem}
+svg{width:100%;height:auto;display:block}
+svg .node rect{fill:var(--card);stroke:var(--line);stroke-width:1.5;cursor:pointer}
+svg .node text{fill:var(--ink);font-size:12px;pointer-events:none}
+svg .node.active rect{stroke:var(--accent);stroke-width:3;fill:color-mix(in srgb,var(--accent) 12%,var(--card))}
+svg .node.ext rect{stroke-dasharray:5 3}
+svg .edge{stroke:var(--mute);stroke-width:1.5;fill:none}svg .arrow{fill:var(--mute)}
+svg .lbl{fill:var(--mute);font-size:11px}
+.box{border-left:4px solid var(--accent);padding:8px 12px;background:color-mix(in srgb,var(--accent) 8%,transparent);border-radius:0 8px 8px 0;min-height:70px}
+.controls{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}
+button{font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 14px;cursor:pointer}
+button:hover,button:focus-visible{border-color:var(--accent)}
+details{border:1px solid var(--line);border-radius:8px;margin:8px 0;padding:8px 12px}
+summary{cursor:pointer;font-weight:600}
+code{background:var(--bg);padding:1px 5px;border-radius:4px;font-size:.9em}
+.warn{color:var(--warn)}.quote{color:var(--mute);font-style:italic}
+table{border-collapse:collapse;width:100%;font-size:.92rem}td,th{border:1px solid var(--line);padding:6px 8px;text-align:left}
+pre{background:var(--bg);padding:12px;border-radius:8px;overflow:auto;font-size:.85rem}
+.cmp{display:flex;gap:12px;flex-wrap:wrap}.cmp div{flex:1;min-width:240px;border:1px solid var(--line);border-radius:8px;padding:10px}
+.bad{color:#b42318}.good{color:#1a7f4b}
+</style>
+</head>
+<body>
+<main>
+<span class="badge">Spec &middot; approved &middot; canonical copy: spec.md</span>
+<h1>Marketplace Template Filler &mdash; Technical Spec</h1>
+<p class="sub">A local Streamlit app in Python. Claude proposes the mapping and checks answers; the output is written by editing the template's XML directly.</p>
+
+<section>
+<h2>How it fits together <span class="quote">(click a piece)</span></h2>
+<svg viewBox="0 0 900 250" role="img" aria-label="Architecture: browser, Streamlit app, readers, mapper, questions, validator, writer, Claude API">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="arrow" d="M0 0L10 5L0 10z"/></marker></defs>
+<g id="nodes"></g>
+</svg>
+<div class="box" id="detail"></div>
+</section>
+
+<section>
+<h2>One run through the system <span class="quote">(PRD core journey)</span></h2>
+<div class="controls"><button id="prev">&larr; Back</button><button id="next">Next &rarr;</button><span id="count" class="quote"></span></div>
+<div class="box" id="stepbox"></div>
+</section>
+
+<section>
+<h2>Why the writer edits the file directly</h2>
+<p>Result of a test on your blank <code>RING (6).xlsm</code>:</p>
+<div class="cmp">
+<div><b>Normal library save (openpyxl)</b><br><span class="bad">Dependent dropdowns: 3 &rarr; 0</span><br><span class="bad">Images: 22 &rarr; 1</span><br><span class="bad">Size: 1.26 MB &rarr; 0.43 MB</span></div>
+<div><b>Edit only the Template sheet XML</b><br><span class="good">Everything else copied byte-for-byte</span><br><span class="good">Dropdowns, images, hidden sheets kept</span><br><span class="good">Checked by an automated test</span></div>
+</div>
+</section>
+
+<section>
+<h2>Question answer modes</h2>
+<table>
+<tr><th>Mode</th><th>Example</th><th>How common (your filled sample)</th></tr>
+<tr><td>Same for all rows</td><td>Item Condition = New</td><td>61 of 93 filled columns</td></tr>
+<tr><td>Depends on a master column</td><td>Material by Color: asked once per distinct color</td><td>~9 columns vary</td></tr>
+<tr><td>From the master (mapped)</td><td>Brand Name, HSN Code, image URLs</td><td>23 columns</td></tr>
+<tr><td>Skip</td><td>Flagged at the end if required</td><td>&mdash;</td></tr>
+</table>
+</section>
+
+<section>
+<h2>Components and PRD links</h2>
+<details><summary>Upload page &mdash; <code>app.py</code></summary>Two uploaders and a Start button. Implements <code>prd.md &gt; Upload and reading files</code>.</details>
+<details><summary>Template reader &mdash; <code>src/template_reader.py</code></summary>Labels row 4, keys row 5, data from row 8; required flags from Data Definitions; allowed values from Valid Values.</details>
+<details><summary>Master reader &mdash; <code>src/master_reader.py</code></summary>Loads the master sheet (608 rows, 36 columns in the sample).</details>
+<details><summary>Column mapper &mdash; <code>src/mapper.py</code></summary>Name matching first, Claude for the rest; user edits any pair. <code>prd.md &gt; Column mapping</code>.</details>
+<details><summary>Question flow &mdash; <code>src/questions.py</code></summary>Required unmapped columns first; optional columns on request. <code>prd.md &gt; Asking about missing columns</code>.</details>
+<details><summary>Validator &mdash; <code>src/validator.py</code></summary>All rows checked; issues grouped by column. <code>prd.md &gt; Validation and QC</code>.</details>
+<details><summary>Template writer &mdash; <code>src/xlsm_writer.py</code></summary>Replaces <code>sheet5.xml</code> only. <code>prd.md &gt; Output</code>.</details>
+</section>
+
+<section>
+<h2>File structure</h2>
+<pre>marketplace master/
+├── app.py
+├── src/  template_reader.py  master_reader.py  mapper.py
+│         questions.py  ai.py  validator.py  xlsm_writer.py
+├── ui/   one file per step's screen
+├── tests/            compares output to the answer key
+├── sample/           real files (git-ignored)
+├── samples_public/   small fake sample
+├── .streamlit/config.toml   light theme
+├── requirements.txt  .env.example  README.md
+└── devpost/</pre>
+</section>
+
+<section>
+<h2>Run it</h2>
+<pre>pip install -r requirements.txt
+# put ANTHROPIC_API_KEY in a local .env (never committed)
+streamlit run app.py     # opens http://localhost:8501</pre>
+<p>Demo video and public GitHub repo are required; deployment is not planned.</p>
+</section>
+
+<section>
+<h2>Failure modes, simplifications, open issues</h2>
+<details><summary>Failure modes</summary><ul>
+<li>Claude API down / no key &rarr; name matching only, manual mapping, rules-only checks with a notice.</li>
+<li>Unreadable files or missing Data Definitions &rarr; plain error, upload again.</li>
+<li>Output damaged &rarr; the writer test fails the step if anything except <code>sheet5.xml</code> changed.</li></ul></details>
+<details><summary>Simplified</summary><ul>
+<li>Questions for required columns by default (not all ~383).</li>
+<li>Local only, no accounts, nothing saved.</li>
+<li>Amazon India ring template only.</li>
+<li>Dependent dropdowns kept intact but not re-evaluated by the checker.</li></ul></details>
+<details open><summary class="warn">Open for your review</summary><ul>
+<li>Confirm "required columns only by default".</li>
+<li>Confirm the per-row "depends on a master column" mode.</li>
+<li>Confirm a small fake sample in <code>samples_public/</code> for the public repo.</li>
+<li>These sample files have no VBA macro code; the writer would still copy any macro part unchanged.</li></ul></details>
+</section>
+</main>
+<script>
+var N=[
+{id:"Browser",x:10,y:90,w:110,t:"Browser page (Streamlit)",d:"The user's screen at localhost:8501. Upload boxes, the mapping table, one question at a time, the validation summary and the download button."},
+{id:"app.py",x:150,y:90,w:110,t:"app.py + ui/",d:"Streamlit app. Keeps one run's data in session memory and shows the current step."},
+{id:"Readers",x:290,y:20,w:130,t:"Template + master readers",d:"Read template columns, required flags and allowed values; load the master rows."},
+{id:"Mapper",x:290,y:90,w:130,t:"Mapper + Questions",d:"Match columns, build the question list, store answers (same for all / depends on a master column / skip)."},
+{id:"Validator",x:290,y:160,w:130,t:"Validator",d:"Checks every row against the rules and lists remaining problems by column."},
+{id:"Claude",x:480,y:90,w:130,t:"Claude API (external)",d:"Suggests mappings and judges free-text answers. Needs ANTHROPIC_API_KEY. Product data is sent to it.",ext:1},
+{id:"Writer",x:680,y:90,w:130,t:"xlsm_writer",d:"Opens the template as a zip, replaces only the Template sheet XML, copies every other part unchanged."},
+{id:"Out",x:680,y:180,w:130,t:"Filled .xlsm download",d:"Same file type and structure as the uploaded template, with the rows filled in."}
+];
+var NS="http://www.w3.org/2000/svg",g=document.getElementById("nodes"),els={};
+function edge(x1,y1,x2,y2){var l=document.createElementNS(NS,"path");l.setAttribute("class","edge");l.setAttribute("d","M"+x1+" "+y1+"L"+x2+" "+y2);l.setAttribute("marker-end","url(#a)");g.appendChild(l)}
+edge(120,115,150,115);edge(260,115,290,115);edge(260,105,290,50);edge(260,125,290,185);edge(420,115,480,115);edge(610,115,680,115);edge(745,140,745,180);
+N.forEach(function(n){var e=document.createElementNS(NS,"g");e.setAttribute("class","node"+(n.ext?" ext":""));e.setAttribute("tabindex","0");e.setAttribute("role","button");
+e.innerHTML='<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="50" rx="10"/><text x="'+(n.x+n.w/2)+'" y="'+(n.y+30)+'" text-anchor="middle">'+n.t.replace(/&/g,"&amp;").slice(0,22)+'</text>';
+e.onclick=function(){sel(n.id)};e.onkeydown=function(k){if(k.key==="Enter"||k.key===" "){k.preventDefault();sel(n.id)}};g.appendChild(e);els[n.id]=e});
+function sel(id){N.forEach(function(n){els[n.id].classList.toggle("active",n.id===id);if(n.id===id)document.getElementById("detail").innerHTML="<b>"+n.t+"</b><br>"+n.d})}
+sel("Browser");
+var S=["1. Upload: the user drops the master (.xlsx) and the template (.xlsm). The readers parse both; the template's required flags and dropdown values are learned.",
+"2. Map: exact names are matched in code, the rest go to Claude. The user sees the table and fixes any pair.",
+"3. Ask: one required, unmapped column per screen. Same for all rows, depends on a master column, or skip. Dropdowns allow only listed values; Claude judges free text.",
+"4. Validate: every row checked; problems grouped by column; skipped required columns flagged with a way back.",
+"5. Download: xlsm_writer replaces only the Template sheet inside the zip. Everything else is copied untouched."];
+var c=0;function go(i){c=Math.max(0,Math.min(S.length-1,i));document.getElementById("stepbox").textContent=S[c];document.getElementById("count").textContent="Step "+(c+1)+" of "+S.length}
+document.getElementById("prev").onclick=function(){go(c-1)};document.getElementById("next").onclick=function(){go(c+1)};go(0);
+</script>
+</body>
+</html>
