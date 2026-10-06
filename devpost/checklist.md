@@ -1,0 +1,95 @@
+---
+doc: checklist
+status: approved
+---
+
+# Build Checklist
+
+Build mode: fast
+
+## Slices
+
+- [x] **1. You can upload both files and see what the tool understood**
+  Becomes usable: A running Streamlit page with two upload boxes. After upload it shows the master (rows, columns) and the template's structure: number of columns, how many are required, how many have dropdown lists.
+  Why now: Proves the whole reading path (the template's `Data Definitions` / `Valid Values` rules, row 4/5/8 layout) before anything depends on it, and includes scaffold, dependencies and config.
+  PRD ref: `prd.md > Upload and reading files`, `prd.md > States and Boundaries` (before upload, unusable file)
+  Spec ref: `spec.md > Upload page`, `spec.md > Template reader`, `spec.md > Master reader`, `spec.md > File Structure`
+  Build: Create the file structure, `requirements.txt`, `.env.example`, `.streamlit/config.toml` (light theme), `src/template_reader.py`, `src/master_reader.py`, and `app.py` with the two uploaders and the summary. Start button stays disabled until both files are present; unreadable files show a plain error.
+  Verify (mechanical): Run a script that reads `sample/RING (6).xlsm` and `sample/Master_Arias_Ring_LOT3_v2.xlsx` and prints 383 template columns, the required count, and 608 master rows; start `streamlit run app.py` and confirm it serves without errors.
+  Learner check: Open the app, upload your master and the blank Amazon template, and say whether the counts and the list of required columns match what you expect.
+  Commit: `Add upload page and template/master readers`
+
+- [ ] **2. You can download a template with the master's data written in**
+  Becomes usable: Pressing a button downloads the same `.xlsm` with the master's matching columns written into the Template sheet from row 8, everything else in the file untouched.
+  Why now: This is the riskiest piece in the spec (saving without losing dropdowns and images). Proving it with simple name-matched columns now means every later slice can rely on it.
+  PRD ref: `prd.md > Output`
+  Spec ref: `spec.md > Template writer`, `spec.md > Why the writer edits the file directly` (Stack and Decisions)
+  Build: `src/xlsm_writer.py` replaces only the `Template` sheet XML (found through `workbook.xml`), writes strings and numbers as inline values from the data row, and copies every other zip entry byte-for-byte. Add a basic name-matching function in `src/mapper.py` and a Download button for the name-matched result.
+  Verify (mechanical): A test confirms every zip entry except the Template sheet is byte-identical to the input, the 3 dependent dropdown definitions and 22 images are still present, 608 rows are written, and the file reopens with openpyxl.
+  Learner check: Download the file, open it in Excel, and confirm it opens without a repair message, the dropdown arrows still work, and the first rows contain your master's data.
+  Commit: `Add direct-XML template writer and download`
+
+- [ ] **3. The AI proposes a mapping and you can correct it**
+  Becomes usable: After upload, a mapping table shows each template column's proposed master column (name matching first, Claude for the rest); you can change any pair, and the download uses your mapping.
+  Why now: First half of the kernel (the AI-assisted mapping) and the first place the Claude API is used, so key handling and fallback get tested early.
+  PRD ref: `prd.md > Column mapping`
+  Spec ref: `spec.md > Column mapper`, `spec.md > External Services and Dependencies`, `spec.md > Important Failure Modes`
+  Build: `src/ai.py` (Claude call, JSON reply), the Claude step in `src/mapper.py`, `ui/mapping_page.py` with an editable table. If there is no API key or the call fails, show a notice and keep name matching only.
+  Verify (mechanical): With the key set, run the mapper on the sample files and confirm it returns a mapping with confidences, and that the master's Brand, Color, and image URL columns map to the right template columns; with the key removed, confirm the fallback message and name-only mapping.
+  Learner check: Upload both files, read the proposed mapping, change one wrong pair, and download; say whether the proposed pairs make sense for your jewelry columns.
+  Commit: `Add Claude-assisted column mapping with editable table`
+
+- [ ] **4. The tool asks you about the columns the master can't fill**
+  Becomes usable: One required, unmapped column per screen with progress, three answer modes (same for all rows, depends on a master column, skip), dropdown columns limited to the allowed values, and an optional "also ask optional columns" button. Your answers fill the rows.
+  Why now: This is the unique kernel (the column-by-column interview). It comes right after mapping so the rest of the build can polish a working core.
+  PRD ref: `prd.md > Asking about missing columns`, `prd.md > The Core Journey` (step 4)
+  Spec ref: `spec.md > Question flow`, `spec.md > Data Model`
+  Build: `src/questions.py` builds the queue from the template's required flags and the mapping; `ui/question_page.py` shows one question at a time; answers are stored in session state and merged into the result table before download.
+  Verify (mechanical): A test builds the queue for the sample files and confirms every required, unmapped column appears; applying a "same for all" answer, a dropdown answer and a "depends on Color" lookup fills the right rows; a value outside the dropdown is rejected.
+  Learner check: Go through the questions for your ring template, answer a few, skip one required column, and say whether the questions feel clear and in a sensible order.
+  Commit: `Add column-by-column question flow`
+
+- [ ] **5. Validation tells you what's still wrong before you download**
+  Becomes usable: After the questions, a validation page lists remaining problems by column (empty required columns, values outside the allowed list, odd formats) with a link back to fix each; Claude also judges free-text answers.
+  Why now: Completes the kernel promise (every required column filled and valid) on top of working mapping and questions.
+  PRD ref: `prd.md > Validation and QC`, `prd.md > States and Boundaries` (skipped mandatory column, invalid answer)
+  Spec ref: `spec.md > Validator`, `spec.md > Important Failure Modes`
+  Build: `src/validator.py` checks all rows against required flags and allowed values; `ui/validation_page.py` shows the summary and go-back links; add the Claude answer check in `src/ai.py` with the rules-only fallback.
+  Verify (mechanical): A test runs the validator on a result with a skipped required column and a bad dropdown value and confirms both are reported with row counts; a complete result reports no problems; with the key removed, the fallback notice appears.
+  Learner check: Skip a required column on purpose, reach validation, confirm it is flagged and you can go back to fix it, then download once it's clean.
+  Commit: `Add validation summary and answer checking`
+
+- [ ] **6. The output matches your hand-filled file and anyone can try it**
+  Becomes usable: A comparison test of the tool's output against `Amazon_Ring upd_ (1).xlsm`, plus a README with the exact run steps and a small fake master for reviewers.
+  Why now: The final proof of the "working" criterion in scope, and the demo-readiness material for submission.
+  PRD ref: `prd.md > What We're Building`, `prd.md > Output`
+  Spec ref: `spec.md > Where It Runs and How Someone Tries It`, `spec.md > File Structure`
+  Build: `tests/` compare the produced values with the answer key for the mapped and constant columns; `samples_public/` fake master (no real product data or account identifiers); `README.md` with install, key setup, start command, and demo steps.
+  Verify (mechanical): Run the comparison test and report the share of cells that match the answer key and which differ; run the README steps from a clean shell and confirm the app starts.
+  Learner check: Follow the README yourself from scratch and say whether the demo flow is something you could record in a minute.
+  Commit: `Add answer-key comparison, fake sample and README`
+
+## Hands-on Checkpoints
+
+- [ ] Early usable behavior explored — after slice 3 (upload, download, and AI mapping)
+- [ ] Final kick-the-tires exploration and feedback completed
+
+## Final Review
+
+- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+
+## Code Tour and App Map
+
+- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
+- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
+- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+
+Activity and evidence: not started
+Route and stops: not started
+Edit outcome: not started
+Reflection: not started
+Activity mode: not started
+
+## Revisions
+
+- Questions cover Required plus Conditionally Required columns (130 in the sample) instead of Required only (9) — the template's `Data Definitions` flags 121 columns as Conditionally Required, including Metal Type, Stone Shape and Material, which the team actually fills; asking only the 9 strictly required would miss most of the work. Slice 4 and `spec.md > Question flow` apply this; columns already mapped from the master are not asked.
