@@ -57,8 +57,7 @@ if "template" in st.session_state and "master" in st.session_state:
     rows = build_rows(tpl, master, mapping, resolve_all(st.session_state.get("answers", {}), master))
     validation_page.render(tpl, master, mapping, rows)
     st.subheader("Download")
-    st.caption(f"{len(mapping)} template columns are mapped to a master column. "
-               "Defaults pre-filled in the template are kept.")
+    st.caption(f"{len(mapping)} template columns are mapped to a master column.")
     try:
         out = fill_template(st.session_state["template_bytes"], tpl.data_row, rows)
         st.download_button("Download filled template", out,

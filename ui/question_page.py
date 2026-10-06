@@ -7,7 +7,7 @@ import streamlit as st
 
 from src.ai import AIUnavailable, check_answers, get_client
 from src.questions import (CONST, LOOKUP, MAX_LOOKUP_VALUES, SKIP, Answer, build_queue, check_value,
-                           distinct_values)
+                           distinct_values, gap_count)
 
 SAME, DEPENDS = "Same for all rows", "Depends on a master column"
 
@@ -104,6 +104,16 @@ def _submit(col, master):
     _advance()
 
 
+def _suggestion(tpl, col):
+    """The value left in the template's first data row, if it is usable for this column."""
+    raw = tpl.defaults.get(col.index)
+    if raw is None:
+        return ""
+    text = str(int(raw)) if isinstance(raw, float) and raw.is_integer() else str(raw).strip()
+    ok, norm, _ = check_value(col, text)
+    return norm if ok else ""
+
+
 def render(tpl, master, mapping):
     ss = st.session_state
     ss.setdefault("answers", {})
@@ -138,12 +148,19 @@ def render(tpl, master, mapping):
         st.caption(col.description)
     if col.example:
         st.caption(f"Example: {col.example}")
+    gaps = gap_count(mapping, master, col)
+    if gaps:
+        st.info(f"Your master fills this column for most rows but leaves {gaps} empty. "
+                "Your answer fills only those empty rows.")
 
     mode = st.radio("How do you want to answer?", [SAME, DEPENDS], horizontal=True,
                     index=1 if prev and prev.mode == LOOKUP else 0, key=f"mode_{col.index}")
     if mode == SAME:
+        suggestion = _suggestion(tpl, col)
         _input(col, "Value for every row", f"val_{col.index}",
-               prev.value if prev and prev.mode == CONST else "")
+               prev.value if prev and prev.mode == CONST else suggestion)
+        if suggestion and not prev:
+            st.caption(f"Suggested from the template's first row: {suggestion}. Check it before you continue.")
     else:
         by = st.selectbox("Which master column does it depend on?", [""] + [str(c) for c in master.columns],
                           key=f"by_{col.index}")

@@ -24,17 +24,19 @@ def key_of(value) -> str:
 
 
 def build_queue(info, mapping: dict, master, include_optional: bool = False, extra=()) -> list:
-    """Template columns to ask about: needed, not pre-filled, and not already supplied by the master.
+    """Template columns to ask about: needed, and not already supplied by the master.
 
     Required first, then conditionally required, then (on request) the rest, each in template order.
-    A mapped column whose master values are all empty still needs asking.
+    A mapped column the master fills only in some rows is asked too: the answer then fills just the
+    empty rows. (Product id columns are exempt: Amazon parent rows legitimately leave them empty.)
     `extra` is a set of column indexes to ask about regardless (used by "fix this" on the validation page).
     """
     def supplied(col):
-        if col.index in info.defaults:
-            return True
         m = mapping.get(col.index)
-        return bool(m) and master[m].map(lambda v: key_of(v) != "").any()
+        if not m:
+            return False
+        filled = master[m].map(lambda v: key_of(v) != "")
+        return bool(filled.all() or (col.label in ("Product Id Type", "Product Id") and filled.any()))
 
     wanted = info.columns if include_optional else info.must_address()
     rank = {"Required": 0, "Conditionally Required": 1}
@@ -56,6 +58,12 @@ def check_value(col, value):
             return True, by_lower[text.lower()], ""
         return False, None, f"'{text}' is not one of the allowed values for {col.label}."
     return True, text, ""
+
+
+def gap_count(mapping: dict, master, col) -> int:
+    """How many master rows are empty for a mapped column (0 when the column is not mapped)."""
+    m = mapping.get(col.index)
+    return 0 if not m else int(master[m].map(lambda v: key_of(v) == "").sum())
 
 
 def distinct_values(master, column: str) -> list:

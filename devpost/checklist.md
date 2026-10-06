@@ -59,7 +59,7 @@ Build mode: fast
   Learner check: Skip a required column on purpose, reach validation, confirm it is flagged and you can go back to fix it, then download once it's clean.
   Commit: `Add validation summary and answer checking`
 
-- [ ] **6. The output matches your hand-filled file and anyone can try it**
+- [x] **6. The output matches your hand-filled file and anyone can try it**
   Becomes usable: A comparison test of the tool's output against `Amazon_Ring upd_ (1).xlsm`, plus a README with the exact run steps and a small fake master for reviewers.
   Why now: The final proof of the "working" criterion in scope, and the demo-readiness material for submission.
   PRD ref: `prd.md > What We're Building`, `prd.md > Output`
@@ -97,3 +97,6 @@ Activity mode: not started
 - Validation treats only empty Required columns as blocking; dropdown mismatches and empty Conditionally Required columns are "check these" items — running the validator on the learner's hand-filled `Amazon_Ring upd_ (1).xlsm` (a file Amazon accepts) showed 6 false "not in dropdown" alarms, because the lists read from `Valid Values` are approximate (e.g. the file stores `full_update` where the list shows "Create or Replace (Full Update)"), and 90 conditional columns that legitimately don't apply.
 - Parent rows (Parentage Level = parent) are exempt from the Product Id / Product Id Type check — Amazon parent listings carry no product id, and the answer key itself leaves them empty.
 - A "Claude thinks this may be wrong" answer check can be overridden by pressing Continue again — a false rejection should never trap the user; the spec said "rejected", the hard rejection stays for dropdown values only.
+- Values left in the template's first data row are shown as suggestions on the questions, never written automatically — the answer-key comparison showed they are leftovers from earlier listings (Ring Size 16, Stone Weight 0.5, a different Manufacturer), and the first version silently wrote them into all 608 rows; the hand-filled file had cleared 26 of the 42. All of those columns are now asked, with the suggestion pre-filled for the user to check.
+- Columns the master fills in only some rows (e.g. Brand Name, empty on parent rows) are asked too, and the answer fills only the empty rows without overwriting master values — found when the validator flagged row 8 after the leftover defaults stopped hiding it.
+- Answer-key result: the three answer modes explain 87 of 90 filled columns exactly; the output matches the hand-filled file in 93.8% of non-empty cells, all differences in Main/Other Image URL and Material, where the hand-filled file made editorial choices (a different main image, photos not in the master).

@@ -6,7 +6,7 @@ import pytest
 from src.mapper import name_match
 from src.master_reader import read_master
 from src.questions import (CONST, LOOKUP, SKIP, Answer, build_queue, check_value, distinct_values,
-                           resolve_all)
+                           gap_count, key_of, resolve_all)
 from src.result import build_rows
 from src.template_reader import read_template
 
@@ -34,8 +34,7 @@ def test_queue_has_needed_unmapped_columns_only(ctx):
     queue = build_queue(info, mapping, master)
     ids = {c.index for c in queue}
     assert queue and all(c.must_address for c in queue)
-    assert not ids & set(mapping)                   # mapped from the master -> not asked
-    assert not ids & set(info.defaults)             # pre-filled by the template -> not asked
+    assert all(gap_count(mapping, master, c) > 0 for c in queue if c.index in mapping)   # mapped -> asked only if the master leaves gaps
     assert col(info, "Item Name").index not in ids or "Item Name" not in master.columns
     required_positions = [i for i, c in enumerate(queue) if c.required]
     assert required_positions == sorted(required_positions)
@@ -61,16 +60,17 @@ def test_dropdown_rejects_value_outside_list(ctx):
 def test_answers_fill_the_right_rows(ctx):
     info, master, mapping = ctx
     queue = build_queue(info, mapping, master)
-    free = next(c for c in queue if not c.has_dropdown)
-    drop = next(c for c in queue if c.has_dropdown)
-    dep = next(c for c in queue if c.has_dropdown and c.index != drop.index)
+    unmapped = [c for c in queue if c.index not in mapping]
+    free = next(c for c in unmapped if not c.has_dropdown)
+    drop = next(c for c in unmapped if c.has_dropdown)
+    dep = next(c for c in unmapped if c.has_dropdown and c.index != drop.index)
     colors = distinct_values(master, "Color")
     assert 1 <= len(colors) <= 40
     answers = {
         free.index: Answer(CONST, value="Same text"),
         drop.index: Answer(CONST, value=drop.allowed[0]),
         dep.index: Answer(LOOKUP, by="Color", table={colors[0]: dep.allowed[0]}),
-        queue[-1].index: Answer(SKIP),
+        unmapped[-1].index: Answer(SKIP),
     }
     rows = build_rows(info, master, mapping, resolve_all(answers, master))
     assert len(rows) == len(master)
@@ -79,4 +79,17 @@ def test_answers_fill_the_right_rows(ctx):
     other = [i for i in range(len(master)) if str(master.iloc[i]["Color"]).strip() != colors[0]]
     assert first and all(rows[i][dep.index] == dep.allowed[0] for i in first)
     assert all(dep.index not in rows[i] for i in other)
-    assert queue[-1].index not in rows[0] or queue[-1].index in info.defaults
+    assert unmapped[-1].index not in rows[0]               # skipped -> stays empty
+    assert not any(i in rows[0] for i in info.defaults if i not in mapping and i not in answers)   # leftovers not copied
+
+
+def test_answer_only_fills_gaps_in_a_mapped_column(ctx):
+    info, master, mapping = ctx
+    brand = next(c for c in info.columns if c.label == "Brand Name")
+    assert gap_count(mapping, master, brand) > 0                      # parent rows have no brand in the master
+    assert brand in build_queue(info, mapping, master)                # so it is asked
+    rows = build_rows(info, master, mapping, resolve_all({brand.index: Answer(CONST, value="Sparkles")}, master))
+    gap_rows = [i for i in range(len(master)) if key_of(master.iloc[i]["Brand Name"]) == ""]
+    assert gap_rows and all(rows[i][brand.index] == "Sparkles" for i in gap_rows)
+    kept = [i for i in range(len(master)) if i not in gap_rows]
+    assert all(rows[i][brand.index] == master.iloc[i]["Brand Name"] for i in kept)   # master values are never overwritten

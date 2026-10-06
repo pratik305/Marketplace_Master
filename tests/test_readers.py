@@ -37,3 +37,10 @@ def test_bad_files_give_plain_errors():
         read_template(b"not an excel file")
     with pytest.raises(MasterError):
         read_master(b"not an excel file")
+
+
+def test_public_demo_master_reads():
+    demo = Path(__file__).resolve().parent.parent / "samples_public" / "demo_master.xlsx"
+    df = read_master(demo.read_bytes())
+    assert df.shape == (4, 36)
+    assert list(df["CATEGORY"]) == ["PARENT", "RING", "RING", "RING"]

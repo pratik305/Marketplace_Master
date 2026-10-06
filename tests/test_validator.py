@@ -49,7 +49,7 @@ def test_skipped_required_and_bad_dropdown_are_reported(ctx):
 def test_complete_required_columns_report_no_blocking_issue(ctx):
     info, master, mapping = ctx
     answers = {c.index: Answer("const", value="x" if not c.has_dropdown else c.allowed[0])
-               for c in info.required_columns() if c.index not in mapping}
+               for c in build_queue(info, mapping, master) if c.required}
     parentage = next(c.index for c in info.columns if c.label == "Parentage Level")
     answers[parentage] = Answer("lookup", by="CATEGORY", table={"PARENT": "Parent", "RING": "Child"})
     rows = build_rows(info, master, mapping, resolve_all(answers, master))
