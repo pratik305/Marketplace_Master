@@ -8,12 +8,17 @@ import streamlit as st
 from src.ai import AIUnavailable, check_answers, get_client
 from src.questions import (CONST, LOOKUP, MAX_LOOKUP_VALUES, SKIP, Answer, build_queue, check_value,
                            distinct_values, gap_count)
+from ui import style
 
 SAME, DEPENDS = "Same for all rows", "Depends on a master column"
+CHOICE_BUTTONS_MAX = 8        # dropdown columns with this many options or fewer show as choice buttons
 
 
 def _input(col, label, key, current=""):
-    """A dropdown for dropdown columns, free text otherwise."""
+    """Choice buttons for short dropdowns, a searchable dropdown for long ones, free text otherwise."""
+    if col.has_dropdown and len(col.allowed) <= CHOICE_BUTTONS_MAX:
+        return st.radio(label, col.allowed, index=col.allowed.index(current) if current in col.allowed else None,
+                        horizontal=True, key=key)
     if col.has_dropdown:
         options = [""] + col.allowed
         return st.selectbox(label, options, index=options.index(current) if current in options else 0, key=key)
@@ -104,6 +109,13 @@ def _submit(col, master):
     _advance()
 
 
+def _use_suggestion(col, master, value):
+    """One-click accept of the template's suggested value for every row."""
+    st.session_state[f"mode_{col.index}"] = SAME
+    st.session_state[f"val_{col.index}"] = value
+    _submit(col, master)
+
+
 def _suggestion(tpl, col):
     """The value left in the template's first data row, if it is usable for this column."""
     raw = tpl.defaults.get(col.index)
@@ -114,69 +126,78 @@ def _suggestion(tpl, col):
     return norm if ok else ""
 
 
+def _status_chips(queue, answers):
+    """Soft-coloured counts: answered, skipped, still to do."""
+    done = sum(1 for c in queue if answers.get(c.index) and answers[c.index].mode != SKIP)
+    skipped = sum(1 for c in queue if answers.get(c.index) and answers[c.index].mode == SKIP)
+    todo = len(queue) - done - skipped
+    st.markdown(style.pill(f"{done} answered", "green") + style.pill(f"{skipped} skipped", "amber")
+                + style.pill(f"{todo} to do", "blue"), unsafe_allow_html=True)
+
+
 def render(tpl, master, mapping):
     ss = st.session_state
     ss.setdefault("answers", {})
     ss.setdefault("q_index", 0)
     ss.setdefault("q_error", {})
+    style.inject()
 
     st.subheader("Questions")
-    st.caption("These columns are needed by the template but are not in your master or pre-filled. "
+    st.caption("These columns are needed by the template but are not in your master. "
                "Answer once for all rows, or say which master column the answer depends on.")
     include_optional = st.checkbox("Also ask about optional columns", key="include_optional")
     queue = build_queue(tpl, mapping, master, include_optional, ss.setdefault("q_extra", set()))
     if not queue:
-        st.success("Nothing to ask: every needed column is filled by the master or the template.")
+        style.note("Nothing to ask: every needed column is filled by the master.", "green")
         return
     total = len(queue)
     pos = min(ss["q_index"], total)
-    st.progress(pos / total, text=f"{min(pos + 1, total)} of {total} columns")
-
     answers = ss["answers"]
+    st.progress(pos / total, text=f"Question {min(pos + 1, total)} of {total}")
+    _status_chips(queue, answers)
+
     if pos >= total:
-        skipped = [c.label for c in queue if answers.get(c.index) and answers[c.index].mode == SKIP]
-        unanswered = [c.label for c in queue if c.index not in answers]
-        st.success(f"All {total} questions covered: {total - len(skipped) - len(unanswered)} answered, "
-                   f"{len(skipped)} skipped.")
+        style.note(f"All {total} questions covered. Scroll down to check the validation summary "
+                   "and download the file.", "green")
         st.button("Go back to the first question", on_click=_restart)
         return
 
     col = queue[pos]
     prev = answers.get(col.index)
-    st.markdown(f"**{col.label}**  \n{col.group} · " + ("**Required**" if col.required else col.requirement))
-    if col.description:
-        st.caption(col.description)
-    if col.example:
-        st.caption(f"Example: {col.example}")
+    style.card(col.label, col.requirement, col.group, col.description, col.example)
     gaps = gap_count(mapping, master, col)
     if gaps:
-        st.info(f"Your master fills this column for most rows but leaves {gaps} empty. "
-                "Your answer fills only those empty rows.")
+        style.note(f"Your master fills this column for most rows but leaves {gaps} empty. "
+                   "Your answer fills only those empty rows.", "blue")
 
-    mode = st.radio("How do you want to answer?", [SAME, DEPENDS], horizontal=True,
-                    index=1 if prev and prev.mode == LOOKUP else 0, key=f"mode_{col.index}")
-    if mode == SAME:
-        suggestion = _suggestion(tpl, col)
-        _input(col, "Value for every row", f"val_{col.index}",
-               prev.value if prev and prev.mode == CONST else suggestion)
-        if suggestion and not prev:
-            st.caption(f"Suggested from the template's first row: {suggestion}. Check it before you continue.")
-    else:
-        by = st.selectbox("Which master column does it depend on?", [""] + [str(c) for c in master.columns],
-                          key=f"by_{col.index}")
-        if by:
-            values = distinct_values(master, by)
-            if len(values) > MAX_LOOKUP_VALUES:
-                st.warning(f"'{by}' has {len(values)} different values. Pick a column with at most "
-                           f"{MAX_LOOKUP_VALUES}, or use 'Same for all rows'.")
-            else:
-                for v in values:
-                    old = prev.table.get(v, "") if prev and prev.mode == LOOKUP and prev.by == by else ""
-                    _input(col, f"When {by} = {v}", f"lk_{col.index}_{v}", old)
+    with st.container(border=True):
+        mode = st.radio("How do you want to answer?", [SAME, DEPENDS], horizontal=True,
+                        index=1 if prev and prev.mode == LOOKUP else 0, key=f"mode_{col.index}")
+        if mode == SAME:
+            suggestion = _suggestion(tpl, col)
+            _input(col, "Value for every row", f"val_{col.index}",
+                   prev.value if prev and prev.mode == CONST else suggestion)
+            if suggestion and not prev:
+                style.note(f"Suggested from the template's first row: {suggestion}", "green")
+                st.button("Use this suggestion and continue", key=f"sug_{col.index}", on_click=_use_suggestion,
+                          args=(col, master, suggestion))
+        else:
+            by = st.selectbox("Which master column does it depend on?", [""] + [str(c) for c in master.columns],
+                              key=f"by_{col.index}")
+            if by:
+                values = distinct_values(master, by)
+                if len(values) > MAX_LOOKUP_VALUES:
+                    style.note(f"'{by}' has {len(values)} different values. Pick a column with at most "
+                               f"{MAX_LOOKUP_VALUES}, or use 'Same for all rows'.", "amber")
+                else:
+                    for v in values:
+                        old = prev.table.get(v, "") if prev and prev.mode == LOOKUP and prev.by == by else ""
+                        _input(col, f"When {by} = {v}", f"lk_{col.index}_{v}", old)
 
     if col.index in ss["q_error"]:
-        st.error(ss["q_error"][col.index])
-    a, b, c = st.columns(3)
-    a.button("Continue", type="primary", key=f"cont_{col.index}", on_click=_submit, args=(col, master))
-    b.button("Skip this column", key=f"skip_{col.index}", on_click=_skip, args=(col,))
-    c.button("Back", key=f"back_{col.index}", on_click=_back, disabled=pos == 0)
+        style.note(ss["q_error"][col.index], "red")
+    a, b, c = st.columns([2, 1, 1])
+    a.button("Continue", type="primary", key=f"cont_{col.index}", on_click=_submit, args=(col, master),
+             use_container_width=True)
+    b.button("Skip this column", key=f"skip_{col.index}", on_click=_skip, args=(col,), use_container_width=True)
+    c.button("Back", key=f"back_{col.index}", on_click=_back, disabled=pos == 0, use_container_width=True)

@@ -76,6 +76,7 @@ Build mode: fast
 
 ## Final Review
 
+- [x] Question and answer screen made handier with light colours — redesign done and verified (27 tests pass); waiting for the learner to retry it
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map
