@@ -6,7 +6,7 @@ from src.result import build_rows
 from src.template_reader import TemplateError, read_template
 from src.xlsm_writer import WriterError, fill_template
 from src.questions import resolve_all
-from ui import mapping_page, question_page
+from ui import mapping_page, question_page, validation_page
 
 st.set_page_config(page_title="Marketplace Template Filler", layout="wide")
 st.title("Marketplace Template Filler")
@@ -27,7 +27,7 @@ if start:
         st.session_state["template_bytes"] = template_file.getvalue()
         st.session_state["template_name"] = template_file.name
         st.session_state["template"] = read_template(st.session_state["template_bytes"])
-        for k in ("mapping", "mapping_source", "mapping_conf", "answers", "q_index"):
+        for k in ("mapping", "mapping_source", "mapping_conf", "answers", "q_index", "q_error", "q_warned", "q_extra"):
             st.session_state.pop(k, None)
     except (MasterError, TemplateError) as err:
         st.session_state.pop("template", None)
@@ -54,11 +54,12 @@ if "template" in st.session_state and "master" in st.session_state:
 
     mapping = mapping_page.render(tpl, master)
     question_page.render(tpl, master, mapping)
+    rows = build_rows(tpl, master, mapping, resolve_all(st.session_state.get("answers", {}), master))
+    validation_page.render(tpl, master, mapping, rows)
     st.subheader("Download")
     st.caption(f"{len(mapping)} template columns are mapped to a master column. "
                "Defaults pre-filled in the template are kept.")
     try:
-        rows = build_rows(tpl, master, mapping, resolve_all(st.session_state.get("answers", {}), master))
         out = fill_template(st.session_state["template_bytes"], tpl.data_row, rows)
         st.download_button("Download filled template", out,
                            file_name="filled_" + st.session_state.get("template_name", "template.xlsm"),

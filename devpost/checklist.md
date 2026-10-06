@@ -49,7 +49,7 @@ Build mode: fast
   Learner check: Go through the questions for your ring template, answer a few, skip one required column, and say whether the questions feel clear and in a sensible order.
   Commit: `Add column-by-column question flow`
 
-- [ ] **5. Validation tells you what's still wrong before you download**
+- [x] **5. Validation tells you what's still wrong before you download**
   Becomes usable: After the questions, a validation page lists remaining problems by column (empty required columns, values outside the allowed list, odd formats) with a link back to fix each; Claude also judges free-text answers.
   Why now: Completes the kernel promise (every required column filled and valid) on top of working mapping and questions.
   PRD ref: `prd.md > Validation and QC`, `prd.md > States and Boundaries` (skipped mandatory column, invalid answer)
@@ -94,3 +94,6 @@ Activity mode: not started
 
 - Questions cover Required plus Conditionally Required columns (130 in the sample) instead of Required only (9) — the template's `Data Definitions` flags 121 columns as Conditionally Required, including Metal Type, Stone Shape and Material, which the team actually fills; asking only the 9 strictly required would miss most of the work. Slice 4 and `spec.md > Question flow` apply this; columns already mapped from the master are not asked.
 - Supported Python lowered from 3.11+ to 3.9+ — the learner's `streamlit` command runs under Python 3.9.13, where a `dict | None` type hint crashed the app at import; code now avoids 3.10+ syntax and `requirements.txt` must be installed into whichever Python runs `streamlit`.
+- Validation treats only empty Required columns as blocking; dropdown mismatches and empty Conditionally Required columns are "check these" items — running the validator on the learner's hand-filled `Amazon_Ring upd_ (1).xlsm` (a file Amazon accepts) showed 6 false "not in dropdown" alarms, because the lists read from `Valid Values` are approximate (e.g. the file stores `full_update` where the list shows "Create or Replace (Full Update)"), and 90 conditional columns that legitimately don't apply.
+- Parent rows (Parentage Level = parent) are exempt from the Product Id / Product Id Type check — Amazon parent listings carry no product id, and the answer key itself leaves them empty.
+- A "Claude thinks this may be wrong" answer check can be overridden by pressing Continue again — a false rejection should never trap the user; the spec said "rejected", the hard rejection stays for dropdown values only.

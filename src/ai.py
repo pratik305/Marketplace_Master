@@ -87,3 +87,29 @@ def propose_mapping(client, template_columns, master, already: dict) -> dict:
         if idx in valid_idx and col in master_cols:
             result[idx] = (col, max(0.0, min(1.0, conf)))
     return result
+
+
+def check_answers(client, col, values: list) -> list:
+    """Ask Claude whether each free-text answer is sensible for a template column.
+
+    Returns [(value, ok, reason)]. Raises AIUnavailable with a plain message on failure; callers
+    treat that as "could not check" and accept the answer.
+    """
+    if client is None:
+        raise AIUnavailable("No API key found, so answers are checked against the template rules only.")
+    prompt = (
+        "You are checking values a user typed for one column of an Amazon India jewelry listing template.\n"
+        f"Column: {col.label} (group: {col.group}, {col.requirement})\n"
+        f"Description: {col.description[:400]}\n"
+        f"Example: {col.example[:120]}\n"
+        "Values to check (JSON list): " + json.dumps(values, ensure_ascii=False) + "\n"
+        "For each value say whether it is a sensible, correctly formatted value for this column. "
+        "Be lenient: only reject a value that is clearly wrong for the column (wrong kind of data, "
+        "wrong unit, wrong format). Reply with JSON only: "
+        '{"results": [{"value": "<value>", "ok": true, "reason": "<short reason if not ok>"}]}'
+    )
+    try:
+        data = _json_from(_ask(client, prompt, max_tokens=1000))["results"]
+        return [(str(r["value"]), bool(r["ok"]), str(r.get("reason", ""))) for r in data]
+    except Exception as exc:
+        raise AIUnavailable(f"The AI answer check could not be completed ({type(exc).__name__}).") from exc

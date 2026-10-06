@@ -23,11 +23,12 @@ def key_of(value) -> str:
     return "" if v is None else str(v).strip()
 
 
-def build_queue(info, mapping: dict, master, include_optional: bool = False) -> list:
+def build_queue(info, mapping: dict, master, include_optional: bool = False, extra=()) -> list:
     """Template columns to ask about: needed, not pre-filled, and not already supplied by the master.
 
     Required first, then conditionally required, then (on request) the rest, each in template order.
     A mapped column whose master values are all empty still needs asking.
+    `extra` is a set of column indexes to ask about regardless (used by "fix this" on the validation page).
     """
     def supplied(col):
         if col.index in info.defaults:
@@ -37,7 +38,7 @@ def build_queue(info, mapping: dict, master, include_optional: bool = False) -> 
 
     wanted = info.columns if include_optional else info.must_address()
     rank = {"Required": 0, "Conditionally Required": 1}
-    queue = [c for c in wanted if not supplied(c)]
+    queue = [c for c in info.columns if c.index in extra or (c in wanted and not supplied(c))]
     return sorted(queue, key=lambda c: (rank.get(c.requirement, 2), c.index))
 
 

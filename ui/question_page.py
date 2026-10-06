@@ -5,6 +5,7 @@ never needs a manual rerun.
 """
 import streamlit as st
 
+from src.ai import AIUnavailable, check_answers, get_client
 from src.questions import (CONST, LOOKUP, MAX_LOOKUP_VALUES, SKIP, Answer, build_queue, check_value,
                            distinct_values)
 
@@ -39,6 +40,31 @@ def _restart():
     st.session_state["q_index"] = 0
 
 
+def _ai_review(col, values):
+    """Ask Claude about free-text answers. Returns a message when it doubts them, else ''.
+
+    The user can press Continue again with the same values to use them anyway. If Claude can't be
+    reached the answers are accepted: the template rules are the only hard check.
+    """
+    ss = st.session_state
+    ss.setdefault("q_warned", {})
+    sig = tuple(values)
+    if col.has_dropdown or not values or ss["q_warned"].get(col.index) == sig:
+        return ""
+    client = get_client()
+    if client is None:
+        return ""
+    try:
+        bad = [(v, why) for v, ok, why in check_answers(client, col, values) if not ok]
+    except AIUnavailable:
+        return ""
+    if not bad:
+        return ""
+    ss["q_warned"][col.index] = sig
+    detail = "; ".join(f"'{v}': {why}" if why else f"'{v}'" for v, why in bad)
+    return f"Claude thinks this may be wrong ({detail}). Press Continue again to use it anyway."
+
+
 def _submit(col, master):
     """Check what was typed or chosen for this column; store it and move on, or show why not."""
     ss, errors = st.session_state, st.session_state["q_error"]
@@ -47,6 +73,10 @@ def _submit(col, master):
         ok, norm, why = check_value(col, ss.get(f"val_{col.index}", ""))
         if not ok:
             errors[col.index] = why
+            return
+        review = _ai_review(col, [norm])
+        if review:
+            errors[col.index] = review
             return
         ss["answers"][col.index] = Answer(CONST, value=norm)
     else:
@@ -66,6 +96,10 @@ def _submit(col, master):
         if not table:
             errors[col.index] = "Give a value for at least one entry, or skip this column."
             return
+        review = _ai_review(col, list(table.values()))
+        if review:
+            errors[col.index] = review
+            return
         ss["answers"][col.index] = Answer(LOOKUP, by=by, table=table)
     _advance()
 
@@ -80,7 +114,7 @@ def render(tpl, master, mapping):
     st.caption("These columns are needed by the template but are not in your master or pre-filled. "
                "Answer once for all rows, or say which master column the answer depends on.")
     include_optional = st.checkbox("Also ask about optional columns", key="include_optional")
-    queue = build_queue(tpl, mapping, master, include_optional)
+    queue = build_queue(tpl, mapping, master, include_optional, ss.setdefault("q_extra", set()))
     if not queue:
         st.success("Nothing to ask: every needed column is filled by the master or the template.")
         return
