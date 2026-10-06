@@ -19,7 +19,7 @@ Build mode: fast
   Learner check: Open the app, upload your master and the blank Amazon template, and say whether the counts and the list of required columns match what you expect.
   Commit: `Add upload page and template/master readers`
 
-- [ ] **2. You can download a template with the master's data written in**
+- [x] **2. You can download a template with the master's data written in**
   Becomes usable: Pressing a button downloads the same `.xlsm` with the master's matching columns written into the Template sheet from row 8, everything else in the file untouched.
   Why now: This is the riskiest piece in the spec (saving without losing dropdowns and images). Proving it with simple name-matched columns now means every later slice can rely on it.
   PRD ref: `prd.md > Output`

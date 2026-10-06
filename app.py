@@ -1,8 +1,11 @@
 """Marketplace Template Filler - Streamlit entry point."""
 import streamlit as st
 
+from src.mapper import name_match
 from src.master_reader import MasterError, read_master
+from src.result import build_rows
 from src.template_reader import TemplateError, read_template
+from src.xlsm_writer import WriterError, fill_template
 
 st.set_page_config(page_title="Marketplace Template Filler", layout="wide")
 st.title("Marketplace Template Filler")
@@ -21,6 +24,7 @@ if start:
     try:
         st.session_state["master"] = read_master(master_file.getvalue())
         st.session_state["template_bytes"] = template_file.getvalue()
+        st.session_state["template_name"] = template_file.name
         st.session_state["template"] = read_template(st.session_state["template_bytes"])
     except (MasterError, TemplateError) as err:
         st.session_state.pop("template", None)
@@ -44,3 +48,16 @@ if "template" in st.session_state and "master" in st.session_state:
             use_container_width=True, hide_index=True)
     with st.expander("Master preview"):
         st.dataframe(master.head(20), use_container_width=True)
+
+    st.subheader("Download")
+    mapping = name_match(tpl.columns, master.columns)
+    st.caption(f"{len(mapping)} template columns matched a master column by name. "
+               "Defaults pre-filled in the template are kept.")
+    try:
+        rows = build_rows(tpl, master, mapping)
+        out = fill_template(st.session_state["template_bytes"], tpl.data_row, rows)
+        st.download_button("Download filled template", out,
+                           file_name="filled_" + st.session_state.get("template_name", "template.xlsm"),
+                           mime="application/vnd.ms-excel.sheet.macroEnabled.12")
+    except WriterError as err:
+        st.error(str(err))

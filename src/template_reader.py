@@ -42,6 +42,7 @@ class TemplateInfo:
     label_row: int
     key_row: int
     data_row: int
+    defaults: dict = field(default_factory=dict)   # column index -> value pre-filled in the first data row
 
     def required_columns(self):
         return [c for c in self.columns if c.required]
@@ -122,4 +123,7 @@ def read_template(data: bytes) -> TemplateInfo:
             group=group, requirement=req, description=desc, example=example, allowed=allowed))
     if not columns:
         raise TemplateError("No columns were found in the Template sheet.")
-    return TemplateInfo(columns=columns, label_row=label_row, key_row=key_row, data_row=data_row)
+    defaults = {c.index: ws.cell(data_row, c.index).value for c in columns
+                if ws.cell(data_row, c.index).value not in (None, "")}
+    return TemplateInfo(columns=columns, label_row=label_row, key_row=key_row,
+                        data_row=data_row, defaults=defaults)
