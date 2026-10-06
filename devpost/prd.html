@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marketplace Template Filler - PRD</title>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--ink:#1d2330;--mute:#5d6678;--line:#dcd8cc;--accent:#1f6feb;--warn:#b7791f;--ok:#1a7f4b}
+@media(prefers-color-scheme:dark){:root{--bg:#14171d;--card:#1d222b;--ink:#e8eaee;--mute:#9aa3b2;--line:#323946;--accent:#6aa5ff;--warn:#e3b341;--ok:#4cc38a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,Segoe UI,sans-serif}
+main{max-width:900px;margin:0 auto;padding:24px 16px 64px}
+h1{margin:0 0 4px;font-size:1.7rem}.sub{color:var(--mute);margin:0 0 20px}
+.badge{display:inline-block;font-size:.75rem;border:1px solid var(--line);border-radius:99px;padding:2px 10px;color:var(--mute);margin-bottom:8px}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+h2{margin:0 0 8px;font-size:1.1rem}h3{margin:12px 0 4px;font-size:1rem}
+svg{width:100%;height:auto;display:block}
+svg .node rect{fill:var(--card);stroke:var(--line);stroke-width:1.5;cursor:pointer}
+svg .node text{fill:var(--ink);font-size:12px;pointer-events:none}
+svg .node.active rect{stroke:var(--accent);stroke-width:3;fill:color-mix(in srgb,var(--accent) 12%,var(--card))}
+svg .edge{stroke:var(--mute);stroke-width:1.5;fill:none}svg .arrow{fill:var(--mute)}
+.controls{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}
+button{font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 14px;cursor:pointer}
+button:hover,button:focus-visible{border-color:var(--accent)}
+.box{border-left:4px solid var(--accent);padding:8px 12px;background:color-mix(in srgb,var(--accent) 8%,transparent);border-radius:0 8px 8px 0}
+.box ul{margin:4px 0;padding-left:20px}
+details{border:1px solid var(--line);border-radius:8px;margin:8px 0;padding:8px 12px}
+summary{cursor:pointer;font-weight:600}
+.mock{border:1px dashed var(--line);border-radius:8px;padding:12px;margin-top:8px;background:var(--bg)}
+.mock .row{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.mock .pill{border:1px solid var(--line);border-radius:6px;padding:4px 10px;background:var(--card)}
+.mock .pill.sel{border-color:var(--accent);color:var(--accent)}
+.warn{color:var(--warn)}.quote{color:var(--mute);font-style:italic}
+label{margin-right:12px}
+</style>
+</head>
+<body>
+<main>
+<span class="badge">PRD &middot; approved &middot; canonical copy: prd.md</span>
+<h1>Marketplace Template Filler</h1>
+<p class="sub">Upload a master sheet and an Amazon template, confirm the mapping, answer one question per missing column, download the filled VBA-enabled template.</p>
+
+<section>
+<h2>The core journey <span class="quote">(click a step)</span></h2>
+<svg viewBox="0 0 900 130" role="img" aria-label="Journey: upload, mapping review, questions, validation, download">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="arrow" d="M0 0L10 5L0 10z"/></marker></defs>
+<g id="nodes"></g>
+</svg>
+<div class="controls"><button id="prev">&larr; Back</button><button id="next">Next &rarr;</button><span id="count" class="quote"></span></div>
+<div class="box" id="detail"></div>
+</section>
+
+<section>
+<h2>Try the question step</h2>
+<p class="quote">Scope said "the agent asks smart questions". Now we know exactly what that means: one column at a time.</p>
+<div class="mock">
+<b>Column 4 of 18: Brand <span class="warn">(mandatory)</span></b>
+<div class="row"><label><input type="radio" name="m" checked> Same for all rows</label><label><input type="radio" name="m"> Varies per product</label></div>
+<div class="row" id="dd"></div>
+<div class="row"><button id="skip">Skip</button><button id="cont">Continue</button></div>
+<div id="msg" class="quote" aria-live="polite">Pick one of the allowed values.</div>
+</div>
+</section>
+
+<section>
+<h2>Behaviors and acceptance criteria</h2>
+<details open><summary>Upload and reading files</summary><ul>
+<li>One master (~500 rows) and one Amazon template per run; rules sheet and data sheet(s) are read.</li></ul></details>
+<details><summary>Column mapping</summary><ul>
+<li>AI proposes; user confirms or changes each pair. Most values come straight from the master.</li>
+<li>[ ] Every template column shows a proposed master column or "not mapped"</li>
+<li>[ ] User can change any pair before moving on</li></ul></details>
+<details><summary>Asking about missing columns</summary><ul>
+<li>One column at a time; dropdown columns force an allowed value; skipping is allowed.</li>
+<li>[ ] Only one question visible at a time, with progress</li>
+<li>[ ] Dropdown shows exactly the template's allowed values</li>
+<li>[ ] Invalid answer is rejected with the reason</li>
+<li>[ ] Skip moves to the next column</li></ul></details>
+<details><summary>Validation and QC</summary><ul>
+<li>Every row checked against the rules; skipped mandatory columns flagged.</li>
+<li>[ ] Summary lists each problem with column and row count</li>
+<li>[ ] No problems shown when all mandatory columns are filled and valid</li></ul></details>
+<details><summary>Output</summary><ul>
+<li>[ ] Downloaded file opens in Excel as the same VBA-enabled template with rows filled</li>
+<li>[ ] All mandatory columns filled for all rows</li></ul></details>
+</section>
+
+<section>
+<h2>States and boundaries</h2>
+<details><summary>Before upload</summary>Two empty boxes; start button disabled until both files are added.</details>
+<details><summary>Skipped mandatory column</summary>Allowed, flagged at validation with a prompt to fill it.</details>
+<details><summary>Invalid answer</summary>Rejected with the reason; the same question stays on screen.</details>
+<details><summary>Unusable file <span class="warn">(assumption)</span></summary>Clear error, upload again.</details>
+<details><summary>Nothing persists <span class="warn">(assumption)</span></summary>Closing the page loses progress.</details>
+</section>
+
+<section>
+<h2>Deferred, non-goals, open questions</h2>
+<details><summary>Deferred from the POC</summary>Other marketplaces; saving mappings across runs; marketplace's own validator check; accounts and deployment.</details>
+<details><summary>Non-goals</summary>Editing the template's VBA code; non-Amazon output.</details>
+<details open><summary class="warn">Open questions</summary><ul>
+<li>How does the user supply values that differ per product/variant? (Assumed: from a master column, or entered for a group of rows such as by CATEGORY.) Must be settled before the spec.</li>
+<li>Confirm or change the two assumptions above.</li></ul></details>
+</section>
+</main>
+<script>
+var steps=[
+["1 Upload","Two boxes: Master sheet and Template file. The start button stays disabled until both are added."],
+["2 Map","The AI reads both files and proposes master-to-template column pairs. The user confirms each or corrects it; unmapped columns go to the questions."],
+["3 Ask","One template column per screen with progress. Same for all rows or varies; dropdown columns require an allowed value; Skip is available. Bad answers are rejected with a reason."],
+["4 Validate","All rows checked against the rules. Remaining problems and skipped mandatory columns are listed, each with a way to go back and fix."],
+["5 Download","The filled template in the same VBA-enabled format as the upload."]
+];
+var cur=0,NS="http://www.w3.org/2000/svg",g=document.getElementById("nodes"),els=[];
+steps.forEach(function(s,i){var x=8+i*178,n=document.createElementNS(NS,"g");
+n.setAttribute("class","node");n.setAttribute("tabindex","0");n.setAttribute("role","button");
+n.innerHTML='<rect x="'+x+'" y="35" width="150" height="60" rx="10"/><text x="'+(x+75)+'" y="70" text-anchor="middle">'+s[0]+'</text>';
+n.onclick=function(){go(i)};n.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();go(i)}};
+g.appendChild(n);els.push(n);
+if(i<4){var l=document.createElementNS(NS,"path");l.setAttribute("class","edge");l.setAttribute("d","M"+(x+150)+" 65H"+(x+176));l.setAttribute("marker-end","url(#a)");g.appendChild(l)}});
+function go(i){cur=Math.max(0,Math.min(4,i));els.forEach(function(e,k){e.classList.toggle("active",k===cur)});
+document.getElementById("detail").textContent=steps[cur][1];
+document.getElementById("count").textContent="Step "+(cur+1)+" of 5";}
+document.getElementById("prev").onclick=function(){go(cur-1)};
+document.getElementById("next").onclick=function(){go(cur+1)};go(0);
+var vals=["Poddar","Brand B","Brand C"],picked=null,dd=document.getElementById("dd"),msg=document.getElementById("msg");
+vals.forEach(function(v){var p=document.createElement("button");p.className="pill";p.textContent=v;
+p.onclick=function(){picked=v;[].forEach.call(dd.children,function(c){c.classList.toggle("sel",c===p)});msg.textContent="Selected: "+v}
+dd.appendChild(p)});
+document.getElementById("cont").onclick=function(){msg.textContent=picked?"Saved. Next: column 5 of 18.":"A value from the dropdown is required."};
+document.getElementById("skip").onclick=function(){msg.textContent="Skipped. This mandatory column will be flagged at validation."};
+</script>
+</body>
+</html>
