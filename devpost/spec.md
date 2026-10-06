@@ -34,7 +34,7 @@ PRD ref: `prd.md > The Core Journey`.
 
 ## Where It Runs and How Someone Tries It
 - Runs locally on the user's computer, in the browser at `http://localhost:8501`. No hosting. (The learner chose local; optional deployment is not planned.)
-- Needs: Python 3.11+, `pip install -r requirements.txt`, and an `ANTHROPIC_API_KEY` in a local `.env` file (git-ignored, never committed; `.env.example` shows the name).
+- Needs: Python 3.9+ (tested on 3.9 and 3.11), `pip install -r requirements.txt`, and an `ANTHROPIC_API_KEY` in a local `.env` file (git-ignored, never committed; `.env.example` shows the name).
 - Start: `streamlit run app.py`.
 - Demo recording: upload `sample/Master_Arias_Ring_LOT3_v2.xlsx` and `sample/RING (6).xlsm` (the blank template), confirm the mapping, answer the questions, show the validation summary, download, and open the result in Excel. Then compare to the answer key `sample/Amazon_Ring upd_ (1).xlsm`.
 - Submission needs the demo video and a public GitHub repo. `sample/` is git-ignored because it holds real product data, so the repo should include a small fake sample for reviewers (see Decisions and Open Issues).

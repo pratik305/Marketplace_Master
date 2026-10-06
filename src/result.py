@@ -1,5 +1,6 @@
 """Combine template defaults, master values and the user's answers into the rows to write."""
 import math
+from typing import Optional
 
 
 def clean(value):
@@ -16,7 +17,7 @@ def clean(value):
     return value
 
 
-def build_rows(info, master, mapping: dict, answers: dict | None = None) -> list:
+def build_rows(info, master, mapping: dict, answers: Optional[dict] = None) -> list:
     """One {column index: value} per master row.
 
     Order of precedence, lowest first: template defaults, master values, answers.

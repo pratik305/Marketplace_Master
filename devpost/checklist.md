@@ -93,3 +93,4 @@ Activity mode: not started
 ## Revisions
 
 - Questions cover Required plus Conditionally Required columns (130 in the sample) instead of Required only (9) — the template's `Data Definitions` flags 121 columns as Conditionally Required, including Metal Type, Stone Shape and Material, which the team actually fills; asking only the 9 strictly required would miss most of the work. Slice 4 and `spec.md > Question flow` apply this; columns already mapped from the master are not asked.
+- Supported Python lowered from 3.11+ to 3.9+ — the learner's `streamlit` command runs under Python 3.9.13, where a `dict | None` type hint crashed the app at import; code now avoids 3.10+ syntax and `requirements.txt` must be installed into whichever Python runs `streamlit`.
