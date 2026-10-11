@@ -59,3 +59,8 @@ def test_garbage_reply_is_a_plain_error(files):
     info, master = files
     with pytest.raises(ai.AIUnavailable, match="map the columns by hand"):
         ai.propose_mapping(FakeClient("sorry, I can't"), info.columns, master, {})
+
+
+def test_low_confidence_pairs_are_not_applied_automatically():
+    from ui.mapping_page import MIN_CONFIDENCE
+    assert 0.3 < MIN_CONFIDENCE <= 0.6        # live run showed junk pairs at 0.2-0.3 and sound ones from 0.5

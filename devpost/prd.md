@@ -40,6 +40,20 @@ Light colors, light background. Plain and functional; usability matters more tha
   - [ ] After upload, every template column shows either a proposed master column or "not mapped".
   - [ ] The user can change any pair before moving on.
 
+### Built-in listing rules
+Source: the learner's rule logic (parent/child rows, product type, metal, units, fixed values), checked against the hand-filled Amazon file. Implements `scope.md > The POC Boundary` (built-in listing rules).
+- Before the mapping and questions, the tool applies the rules in `rules/amazon_in_jewellery.json`. The user can switch them off.
+- Rules fill: parent/child markers and Parent SKU; Product Type and browse node from the category; Metal Type, Metal Stamp, Material and Color Map from the metal stamp and colour; units; fixed values (Listing Action, Gem Type, Stone Creation Method, ...); translated values (e.g. "IGI Certificate" -> "IGI", "Women" -> "female"); copies of master columns (price, MRP, images, bullet points).
+- Parent rows take their first child's value for family attributes; child-only columns (images, Ring Size, weights, Material, Parent SKU) stay blank on parents.
+- A rule value replaces the raw master value in its column. Columns fully filled by rules are not asked.
+- Every rule value is checked against the template's dropdown list; values the template would not accept are listed for the user.
+- Acceptance criteria:
+  - [ ] The rules screen shows how many columns the rules filled and the parent/child row counts.
+  - [ ] Against the learner's hand-filled file, the rule output matches in at least 94% of the cells it fills (differences are editorial picks such as image URLs).
+  - [ ] Columns covered by rules do not appear in the questions; the question count is lower than without rules.
+  - [ ] A rule value outside a column's dropdown is listed instead of silently written.
+  - [ ] "Skip all conditionally required" skips every unanswered conditionally required question and leaves required ones.
+
 ### Asking about missing columns
 - Only columns that are not mapped from the master (or are empty in it) generate a question.
 - One column at a time. The agent explains the column and asks for the value.
@@ -102,3 +116,6 @@ Remembering past answers per product category; bulk apply of rules; a history of
 ## Open Questions
 - **How does the user supply values that differ per product/variant?** (Assumption for now: the value comes from a master column, or the user enters it for a group of rows, e.g. by CATEGORY.) Must be settled before `4-spec`.
 - **Unusable files and no persistence** are assumptions, not decisions: confirm or change them.
+
+## Revision: built-in rules
+- Added after the learner shared the rule logic of an earlier tool (parent/child pairs, field mappings, brand and metal rules, hardcoded values). The learner chose to keep the Python/Streamlit app and the `.xlsm` output (not the single-file HTML tool with CSV output) and to focus on the rules. Where the earlier prompt and the real files disagree (Variation Theme `Size/Color` vs `COLOR`, `Lab-grown` vs `Lab-Created`, browse node id vs path, Product Id Type `SKU` vs `GTIN Exempt`, brand HSN codes vs the master's `71131914`) the rules follow the real template and hand-filled file.

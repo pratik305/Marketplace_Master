@@ -109,6 +109,16 @@ def _submit(col, master):
     _advance()
 
 
+def _skip_conditionals(queue):
+    """Skip every conditionally required column not answered yet, then jump to the first one left."""
+    ss = st.session_state
+    for c in queue:
+        if not c.required and c.index not in ss["answers"]:
+            ss["answers"][c.index] = Answer(SKIP)
+    left = [i for i, c in enumerate(queue) if c.index not in ss["answers"]]
+    ss["q_index"] = left[0] if left else len(queue)
+
+
 def _use_suggestion(col, master, value):
     """One-click accept of the template's suggested value for every row."""
     st.session_state[f"mode_{col.index}"] = SAME
@@ -146,7 +156,8 @@ def render(tpl, master, mapping):
     st.caption("These columns are needed by the template but are not in your master. "
                "Answer once for all rows, or say which master column the answer depends on.")
     include_optional = st.checkbox("Also ask about optional columns", key="include_optional")
-    queue = build_queue(tpl, mapping, master, include_optional, ss.setdefault("q_extra", set()))
+    queue = build_queue(tpl, mapping, master, include_optional, ss.setdefault("q_extra", set()),
+                        ss.get("rule_covered", ()))
     if not queue:
         style.note("Nothing to ask: every needed column is filled by the master.", "green")
         return
@@ -155,6 +166,11 @@ def render(tpl, master, mapping):
     answers = ss["answers"]
     st.progress(pos / total, text=f"Question {min(pos + 1, total)} of {total}")
     _status_chips(queue, answers)
+    open_conditionals = [c for c in queue if not c.required and c.index not in answers]
+    if open_conditionals:
+        st.button(f"Skip all {len(open_conditionals)} conditionally required columns not answered yet",
+                  key="skip_conditionals", on_click=_skip_conditionals, args=(queue,),
+                  help="Many of these do not apply to your product. They stay in the validation list as 'check these'.")
 
     if pos >= total:
         style.note(f"All {total} questions covered. Scroll down to check the validation summary "

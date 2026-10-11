@@ -9,13 +9,16 @@ Built for a listing team who fill these templates by hand for hundreds of produc
 ## How it works
 
 1. **Upload** the master sheet (`.xlsx`) and the Amazon template (`.xlsm`).
-2. **Map** — columns with matching names are paired automatically; *Ask Claude to map the rest* proposes more
+2. **Rules** — built-in listing rules (`rules/amazon_in_jewellery.json`, editable) fill what your team
+   already knows: parent/child rows, product type, metal and units, fixed values, translated values.
+   You can switch them off on the page.
+3. **Map** — columns with matching names are paired automatically; *Ask Claude to map the rest* proposes more
    pairs. You confirm or change any pair.
-3. **Questions** — one required (or conditionally required) column at a time. Answer once for all rows, or say
+4. **Questions** — one required (or conditionally required) column at a time. Answer once for all rows, or say
    which master column the answer depends on (e.g. Material by Color). Dropdown columns only accept the
    template's allowed values. Skipping is allowed.
-4. **Validation** — what is still empty or doubtful, with a *Fix this* button for each item.
-5. **Download** the filled template. Only the `Template` sheet is edited; dropdown rules, images, hidden
+5. **Validation** — what is still empty or doubtful, with a *Fix this* button for each item.
+6. **Download** the filled template. Only the `Template` sheet is edited; dropdown rules, images, hidden
    sheets and everything else in the file are copied across untouched.
 
 ## Run it

@@ -17,14 +17,16 @@ def clean(value):
     return value
 
 
-def build_rows(info, master, mapping: dict, answers: Optional[dict] = None) -> list:
+def build_rows(info, master, mapping: dict, answers: Optional[dict] = None, rule_values: Optional[dict] = None) -> list:
     """One {column index: value} per master row.
 
-    Master values win; an answer for a mapped column fills only the rows the master left empty. Values left in the template's first data
+    Rule values (built-in listing rules) replace the raw master value for their columns. An answer for a mapped
+    or rule-filled column fills only the rows still empty. Values left in the template's first data
     row are never copied: they are leftovers from earlier use, so they are only offered as suggestions.
     `answers` maps a template column index to a function row_number -> value (or a constant).
     """
     answers = answers or {}
+    rule_values = rule_values or {}
     rows = []
     for i in range(len(master)):
         row = {}
@@ -32,9 +34,12 @@ def build_rows(info, master, mapping: dict, answers: Optional[dict] = None) -> l
             v = clean(master.iloc[i][master_col])
             if v is not None:
                 row[col_idx] = v
+        for col_idx, vals in rule_values.items():
+            if vals[i] is not None:
+                row[col_idx] = vals[i]
         for col_idx, ans in answers.items():
-            if col_idx in mapping and col_idx in row:
-                continue                  # the master has a value here: an answer only fills gaps
+            if (col_idx in mapping or col_idx in rule_values) and col_idx in row:
+                continue                  # the master or a rule has a value here: an answer only fills gaps
             v = ans(i) if callable(ans) else ans
             if v not in (None, ""):
                 row[col_idx] = v

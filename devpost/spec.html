@@ -127,6 +127,7 @@ streamlit run app.py     # opens http://localhost:8501</pre>
 <li>Confirm a small fake sample in <code>samples_public/</code> for the public repo.</li>
 <li>These sample files have no VBA macro code; the writer would still copy any macro part unchanged.</li></ul></details>
 </section>
+<section style="border-left:4px solid #1f6feb"><h2>Update: built-in listing rules</h2><p>Added after the rule logic of an earlier tool was shared. A rules file (<code>rules/amazon_in_jewellery.json</code>, editable) fills what the team already knows before any question: parent/child rows, product type, metal and units, translated and fixed values. Checked against the hand-filled file: 51 columns, 95.3% of cells match; the differences are image URLs. Questions dropped from 128 to 95, and a "Skip all conditionally required" button handles the rest. The Python app and the <code>.xlsm</code> output stay. See <code>spec.md</code> for the details.</p></section>
 </main>
 <script>
 var N=[

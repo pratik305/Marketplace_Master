@@ -65,6 +65,11 @@ Step one is deterministic: exact or near-exact name matches. Step two sends the 
 PRD ref: `prd.md > Column mapping`.
 Files: `src/mapper.py`, `ui/mapping_page.py`.
 
+### Rules engine
+Applies the team's listing rules before mapping and questions. Rules live in `rules/amazon_in_jewellery.json` (fixed values, master-column copies, value translations, product types, browse keywords, metal stamp aliases, columns that are not inherited by parents, dropdown checks to skip). `src/rules.py` finds template columns by label (`Label#2` = second column with that label), computes one value per master row, lets parents inherit from the first child of their family (except child-only columns), and checks every value against the template's dropdown list. Rule values replace raw master values; answers only fill gaps. `ui/rules_page.py` shows what the rules filled.
+PRD ref: `prd.md > Built-in listing rules`.
+Files: `src/rules.py`, `rules/amazon_in_jewellery.json`, `ui/rules_page.py`.
+
 ### Question flow
 Builds the queue: required template columns not covered by the mapping (or empty in the master), required first. Optional columns are not asked by default; an "also fill optional columns" button adds them. Each question offers three answer modes:
 1. **Same for all rows** — one value (or one dropdown pick).
@@ -142,3 +147,7 @@ marketplace master/
 - Confirm the fake sample in `samples_public/` for the public repo.
 - Which columns in the template are required can vary by template version; the tool reads them from `Data Definitions` each time.
 - The `.xlsm` files have no VBA macro code (no `vbaProject.bin`), so macro preservation is not an issue for these samples; the writer still copies any such part unchanged.
+
+## Revision: built-in rules
+- A rules layer was added (see Rules engine). Order of precedence per cell: master mapping < rule < answer, where an answer only fills cells still empty on mapped or rule-filled columns. The rules file is plain JSON so the team can change a rule without code. Verified against the hand-filled file: 51 columns, 95.3% of cells match; differences are image URLs and one unit cell. The question list went from 128 to 95 columns; most of the rest are conditionally required columns that do not apply to rings, so the question screen has a "Skip all conditionally required" button.
+- AI mapping pairs below 0.5 confidence are listed as suggestions and not applied (a live run proposed Product Id <- Sku Code at 0.20).

@@ -69,6 +69,16 @@ Build mode: fast
   Learner check: Follow the README yourself from scratch and say whether the demo flow is something you could record in a minute.
   Commit: `Add answer-key comparison, fake sample and README`
 
+- [x] **7. Built-in listing rules fill what your team already knows**
+  Becomes usable: A "Built-in listing rules" step that fills parent/child markers, Product Type, browse node, metal fields, units, translated values and fixed values from `rules/amazon_in_jewellery.json`, so the questions only cover what is left.
+  Why now: Added after the learner shared the rule logic of an earlier tool and chose to focus on rules; it cuts the question list and uses the learner's own business knowledge.
+  PRD ref: `prd.md > Built-in listing rules`
+  Spec ref: `spec.md > Rules engine`
+  Build: `src/rules.py`, `rules/amazon_in_jewellery.json`, `ui/rules_page.py`; rules override raw master values, answers fill gaps; rule-covered columns leave the question queue; validator knows child-only columns; "Skip all conditionally required" button.
+  Verify (mechanical): `tests/test_rules.py` compares the rule output with the hand-filled file (95.3% of 31,008 cells, differences only in images and one unit cell), checks parent/child structure, inheritance, dropdown fit, and that the question list shrinks.
+  Learner check: Upload your files, read the rules summary, then go through the questions and confirm that the columns the rules filled (Product Type, Metal Type, Certificate Type, ...) are no longer asked and look right in the downloaded file.
+  Commit: `Add built-in listing rules layer`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 3 (upload, download, and AI mapping)
@@ -101,3 +111,4 @@ Activity mode: not started
 - Values left in the template's first data row are shown as suggestions on the questions, never written automatically — the answer-key comparison showed they are leftovers from earlier listings (Ring Size 16, Stone Weight 0.5, a different Manufacturer), and the first version silently wrote them into all 608 rows; the hand-filled file had cleared 26 of the 42. All of those columns are now asked, with the suggestion pre-filled for the user to check.
 - Columns the master fills in only some rows (e.g. Brand Name, empty on parent rows) are asked too, and the answer fills only the empty rows without overwriting master values — found when the validator flagged row 8 after the leftover defaults stopped hiding it.
 - Answer-key result: the three answer modes explain 87 of 90 filled columns exactly; the output matches the hand-filled file in 93.8% of non-empty cells, all differences in Main/Other Image URL and Material, where the hand-filled file made editorial choices (a different main image, photos not in the master).
+- Built-in listing rules added as slice 7 — the learner shared the rule logic of an earlier HTML tool (parent/child pairs, field mappings, brand and metal rules, hardcoded values) and asked to focus on rules while keeping the Python app and `.xlsm` output; where that prompt disagreed with the real template and hand-filled file (Variation Theme, Stone Creation Method, browse node format, Product Id Type, brand HSN codes) the rules follow the real files. Parent rows are taken from the master, which already contains them; generating parents from one-row-per-SKU masters is left for later.

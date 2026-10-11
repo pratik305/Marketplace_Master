@@ -9,7 +9,8 @@ def _fix(col, tpl, master, mapping):
     """Jump to this column's question (adding it to the queue if it was not already there)."""
     ss = st.session_state
     ss.setdefault("q_extra", set()).add(col.index)
-    queue = build_queue(tpl, mapping, master, ss.get("include_optional", False), ss["q_extra"])
+    queue = build_queue(tpl, mapping, master, ss.get("include_optional", False), ss["q_extra"],
+                        ss.get("rule_covered", ()))
     ss["q_index"] = next(i for i, c in enumerate(queue) if c.index == col.index)
     ss["answers"].pop(col.index, None)
 
@@ -20,7 +21,7 @@ def _rows_text(rows, n=6):
 
 
 def render(tpl, master, mapping, rows):
-    issues = validate(tpl, rows)
+    issues = validate(tpl, rows, st.session_state.get("rule_parent_blank", ()))
     must = blocking(issues)
     check = [i for i in issues if i not in must]
 

@@ -36,15 +36,18 @@ def _text(value) -> str:
     return str(value).strip()
 
 
-def validate(info, rows: list) -> list:
-    """Return issues, most serious first. `rows` is the list of {column index: value} to be written."""
+def validate(info, rows: list, parent_blank=()) -> list:
+    """Return issues, most serious first. `rows` is the list of {column index: value} to be written.
+
+    `parent_blank` is a set of column indexes that parent rows legitimately leave empty (child-only rules).
+    """
     issues = []
     parentage = next((c.index for c in info.columns if c.label == "Parentage Level"), None)
     is_parent = [parentage is not None and _text(r.get(parentage)).lower() == "parent" for r in rows]
     for col in info.columns:
         values = [_text(r.get(col.index)) for r in rows]
         if col.must_address:
-            skip_parents = col.label in PARENT_EXEMPT_LABELS
+            skip_parents = col.label in PARENT_EXEMPT_LABELS or col.index in parent_blank
             empty = [info.data_row + i for i, v in enumerate(values)
                      if not v and not (skip_parents and is_parent[i])]
             if empty:

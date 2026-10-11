@@ -7,6 +7,7 @@ from streamlit.testing.v1 import AppTest
 from src.mapper import name_match
 from src.master_reader import read_master
 from src.questions import build_queue, distinct_values
+from src.rules import apply_rules, load_rules
 from src.template_reader import read_template
 
 SAMPLE = Path(__file__).resolve().parent.parent / "sample"
@@ -23,7 +24,8 @@ def app():
     at.session_state["master"], at.session_state["template"] = master, tpl
     at.session_state["template_bytes"], at.session_state["template_name"] = tb, "RING (6).xlsm"
     at.run()
-    queue = build_queue(tpl, name_match(tpl.columns, master.columns), master)
+    covered = apply_rules(tpl, master, load_rules()).covered()       # the app skips what the rules already fill
+    queue = build_queue(tpl, name_match(tpl.columns, master.columns), master, covered=covered)
     return at, queue, master
 
 
@@ -35,6 +37,10 @@ def choose(at, key, value):
         at.selectbox(key=key).select(value)
 
 
+def tpl_default(at, col):
+    return at.session_state["template"].defaults.get(col.index)
+
+
 def click(at, label):
     next(b for b in at.button if b.label == label).click()
     at.run()
@@ -43,16 +49,19 @@ def click(at, label):
 def test_same_for_all_skip_and_back(app):
     at, queue, _ = app
     assert not at.exception
+    i = next(i for i, c in enumerate(queue) if not c.has_dropdown and tpl_default(at, c) is None)
+    at.session_state["q_index"] = i
+    at.run()
     click(at, "Continue")                                   # nothing entered
-    assert at.session_state["q_index"] == 0 and any("Enter a value" in m.value for m in at.markdown)
-    at.text_input(key=f"val_{queue[0].index}").set_value("MY-SKU")
+    assert at.session_state["q_index"] == i and any("Enter a value" in m.value for m in at.markdown)
+    at.text_input(key=f"val_{queue[i].index}").set_value("MY-VALUE")
     click(at, "Continue")
-    assert at.session_state["answers"][queue[0].index].value == "MY-SKU"
-    assert at.session_state["q_index"] == 1
+    assert at.session_state["answers"][queue[i].index].value == "MY-VALUE"
+    assert at.session_state["q_index"] == i + 1
     click(at, "Skip this column")
-    assert at.session_state["answers"][queue[1].index].mode == "skip" and at.session_state["q_index"] == 2
+    assert at.session_state["answers"][queue[i + 1].index].mode == "skip" and at.session_state["q_index"] == i + 2
     click(at, "Back")
-    assert at.session_state["q_index"] == 1 and not at.exception
+    assert at.session_state["q_index"] == i + 1 and not at.exception
 
 
 def test_depends_on_master_column(app):
@@ -94,4 +103,14 @@ def test_short_dropdowns_are_choice_buttons(app):
     at.session_state["q_index"] = i
     at.run()
     assert at.radio(key=f"val_{queue[i].index}").options == queue[i].allowed
+    assert not at.exception
+
+
+def test_skip_all_conditionals_jumps_to_what_is_left(app):
+    at, queue, _ = app
+    click(at, next(b.label for b in at.button if b.label.startswith("Skip all")))
+    answers = at.session_state["answers"]
+    assert all(answers[c.index].mode == "skip" for c in queue if not c.required)
+    assert not any(c.index in answers for c in queue if c.required)          # required ones are never auto-skipped
+    assert at.session_state["q_index"] == next(i for i, c in enumerate(queue) if c.required)   # first required left
     assert not at.exception

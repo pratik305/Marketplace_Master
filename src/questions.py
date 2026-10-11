@@ -23,15 +23,18 @@ def key_of(value) -> str:
     return "" if v is None else str(v).strip()
 
 
-def build_queue(info, mapping: dict, master, include_optional: bool = False, extra=()) -> list:
+def build_queue(info, mapping: dict, master, include_optional: bool = False, extra=(), covered=()) -> list:
     """Template columns to ask about: needed, and not already supplied by the master.
 
     Required first, then conditionally required, then (on request) the rest, each in template order.
     A mapped column the master fills only in some rows is asked too: the answer then fills just the
     empty rows. (Product id columns are exempt: Amazon parent rows legitimately leave them empty.)
+    `covered` is the set of column indexes the built-in rules already fill completely: they are not asked.
     `extra` is a set of column indexes to ask about regardless (used by "fix this" on the validation page).
     """
     def supplied(col):
+        if col.index in covered:
+            return True
         m = mapping.get(col.index)
         if not m:
             return False

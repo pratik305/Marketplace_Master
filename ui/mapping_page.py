@@ -6,6 +6,7 @@ from src.ai import AIUnavailable, get_client, propose_mapping
 from src.mapper import name_match
 
 BLANK = ""
+MIN_CONFIDENCE = 0.5      # AI pairs below this are shown as suggestions, never applied automatically
 
 
 def init_mapping(tpl, master):
@@ -27,9 +28,15 @@ def render(tpl, master):
         try:
             with st.spinner("Claude is reading the column names..."):
                 found = propose_mapping(get_client(), tpl.columns, master, mapping)
-            for idx, (col, c) in found.items():
+            applied = {i: v for i, v in found.items() if v[1] >= MIN_CONFIDENCE}
+            for idx, (col, c) in applied.items():
                 mapping[idx], source[idx], conf[idx] = col, "AI", c
-            st.success(f"Claude proposed {len(found)} more pairs.")
+            st.success(f"Claude proposed {len(found)} more pairs; {len(applied)} applied.")
+            unsure = {i: v for i, v in found.items() if v[1] < MIN_CONFIDENCE}
+            if unsure:
+                by = {c.index: c for c in tpl.columns}
+                st.info("Not applied (low confidence, check by hand if you want them): " + "; ".join(
+                    f"{by[i].label} <- {col} ({c:.2f})" for i, (col, c) in unsure.items()))
         except AIUnavailable as err:
             st.warning(f"{err} Name matching is still in use.")
 

@@ -1,0 +1,127 @@
+{
+  "name": "Amazon India - Jewellery (rings)",
+  "notes": "Values follow the template's own dropdown lists and a hand-filled Amazon file. Labels are template row-4 names; 'Label#2' means the second column with that label. Edit this file to change a rule; no code needed.",
+  "family_column": "CODE",
+  "parent_marker": {
+    "column": "CATEGORY",
+    "value": "PARENT"
+  },
+  "constants": {
+    "Listing Action": "full_update",
+    "Variation Theme Name": "COLOR",
+    "Item Type Name": "Rings",
+    "Jewelry Material Categorization": "fine",
+    "Number of Items": 1,
+    "Gem Type": "Diamond",
+    "Stone Type": "Diamond",
+    "Stone Creation Method": "Lab-Created",
+    "Unit Count Type": "Count",
+    "Item Condition": "New",
+    "Item Weight Unit": "Grams"
+  },
+  "copy": {
+    "SKU": "Sku Code",
+    "Item Name": "Sku Name",
+    "Brand Name": "Brand Name",
+    "Product Id Type": "Product Id Type",
+    "Product Description": "Description",
+    "Manufacturer": "Manufacture Name",
+    "Country of Origin": "Country of Origin",
+    "External Product Information": "HSN Code",
+    "Color": "Color",
+    "Your Price INR (Sell on Amazon, IN)": "Selling Price",
+    "Maximum Retail Price (Sell on Amazon, IN)": "MRP",
+    "Bullet Point#1": "Bullet Point",
+    "Bullet Point#2": "Bullet Point.1",
+    "Bullet Point#3": "Bullet Point.2",
+    "Bullet Point#4": "Bullet Point.3"
+  },
+  "child_only": {
+    "constants": {
+      "Metal Weight Unit": "grams",
+      "Total Diamond Weight Unit": "carats"
+    },
+    "copy": {
+      "Ring Size": "Sku Size",
+      "Metal Weight": "NET WEIGHT",
+      "Item Weight": "NET WEIGHT",
+      "Total Diamond Weight": "Diamond Weight",
+      "Stone Weight": "Diamond Weight",
+      "Number Of Stones": "Diamond Count",
+      "Number of Stones per Type": "Diamond Count",
+      "Main Image URL": "Image Url 1",
+      "Other Image URL#1": "Image Url 2",
+      "Other Image URL#2": "Image Url 3",
+      "Other Image URL#3": "Image Url 4"
+    }
+  },
+  "value_maps": {
+    "Certificate Type": {
+      "from": "Certificate Type",
+      "map": {
+        "IGI Certificate": "IGI"
+      }
+    },
+    "Stone Shape": {
+      "from": "Diamond Shape",
+      "map": {
+        "Round": "Round Brilliant"
+      }
+    },
+    "Target Gender": {
+      "from": "Gender",
+      "map": {
+        "Women": "female",
+        "Men": "male"
+      }
+    },
+    "Department Name": {
+      "from": "Gender",
+      "map": {
+        "Women": "Womens",
+        "Men": "Mens"
+      }
+    }
+  },
+  "product_types": {
+    "RING": "RING",
+    "EARRING": "EARRING",
+    "NECKLACE": "NECKLACE",
+    "BRACELET": "BRACELET",
+    "PENDANT": "PENDANT",
+    "BANGLE": "BRACELET"
+  },
+  "browse_keywords": {
+    "RING": "Rings",
+    "EARRING": "Earrings",
+    "NECKLACE": "Necklaces",
+    "BRACELET": "Bracelets",
+    "PENDANT": "Pendants"
+  },
+  "metal": {
+    "source": "Metal Stamp/ Type/Material",
+    "color": "Color",
+    "stamp_aliases": {
+      "925S": "925",
+      "14KT": "14K",
+      "18KT": "18K",
+      "22KT": "22K",
+      "9KT": "9K"
+    },
+    "silver_stamps": [
+      "925"
+    ]
+  },
+  "no_parent_inherit": [
+    "Product Id Type"
+  ],
+  "unchecked_dropdowns": {
+    "reason": "The template lists for these columns are not a reliable check (the file stores internal values, or the column is not a real dropdown).",
+    "columns": [
+      "Listing Action",
+      "Your Price INR (Sell on Amazon, IN)",
+      "Maximum Retail Price (Sell on Amazon, IN)",
+      "Material#1"
+    ]
+  }
+}
