@@ -6,7 +6,7 @@ from src.result import build_rows
 from src.template_reader import TemplateError, read_template
 from src.xlsm_writer import WriterError, fill_template
 from src.questions import resolve_all
-from ui import mapping_page, question_page, rules_page, validation_page
+from ui import answer_sheet, mapping_page, question_page, rules_page, validation_page
 
 st.set_page_config(page_title="Marketplace Template Filler", layout="wide")
 st.title("Marketplace Template Filler")
@@ -54,7 +54,9 @@ if "template" in st.session_state and "master" in st.session_state:
 
     rule_res = rules_page.render(tpl, master)
     mapping = mapping_page.render(tpl, master)
-    question_page.render(tpl, master, mapping)
+    style_choice = st.radio("How do you want to answer the remaining columns?", ["Answer sheet", "One at a time"],
+                            horizontal=True, key="answer_style")
+    (answer_sheet if style_choice == "Answer sheet" else question_page).render(tpl, master, mapping)
     rows = build_rows(tpl, master, mapping, resolve_all(st.session_state.get("answers", {}), master),
                       rule_res.values if rule_res else None)
     validation_page.render(tpl, master, mapping, rows)

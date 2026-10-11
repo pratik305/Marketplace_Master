@@ -92,6 +92,7 @@ ul{margin:6px 0;padding-left:20px}
 <p>It removes tedious, mistake-prone work from the team's daily listing job, and it's a chance to get the overall experience of building a real tool end to end.</p>
 </section>
 <section style="border-left:4px solid #1f6feb"><h2>Update: built-in listing rules</h2><p>Added after the rule logic of an earlier tool was shared. A rules file (<code>rules/amazon_in_jewellery.json</code>, editable) fills what the team already knows before any question: parent/child rows, product type, metal and units, translated and fixed values. Checked against the hand-filled file: 51 columns, 95.3% of cells match; the differences are image URLs. Questions dropped from 128 to 95, and a "Skip all conditionally required" button handles the rest. The Python app and the <code>.xlsm</code> output stay. See <code>scope.md</code> for the details.</p></section>
+<section style="border-left:4px solid #1f6feb"><h2>Update: answer sheet</h2><p>Answering one column at a time was too slow, so the remaining columns now sit on one pre-filled answer sheet: saved answers, Claude proposals (only when it is at least 0.8 confident) and the template's suggestions pre-fill the rows, one button applies them all, and answers are remembered for the next run. See <code>scope.md</code>.</p></section>
 </main>
 
 <script>

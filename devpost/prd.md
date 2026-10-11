@@ -54,6 +54,21 @@ Source: the learner's rule logic (parent/child rows, product type, metal, units,
   - [ ] A rule value outside a column's dropdown is listed instead of silently written.
   - [ ] "Skip all conditionally required" skips every unanswered conditionally required question and leaves required ones.
 
+### Answer sheet (replaces answering one column at a time)
+Changed after the learner found one-question-at-a-time too slow for a long list. Implements `scope.md > The Core Loop` (ask about what is missing) in a faster shape.
+- All remaining columns appear on one screen, grouped in tabs by the template's own sections, one row per column, with the right input (dropdown for dropdown columns, text otherwise).
+- Rows are pre-filled, in this order: the user's last answer, answers saved from an earlier run, a Claude proposal (only when Claude is at least 0.8 confident), the template's own first-row suggestion. A less confident Claude proposal is shown as a hint only.
+- Nothing is used until the user presses **Apply all answers**. A blank row means skip; skipped required columns are flagged in the validation step.
+- **Let Claude propose answers** fills blank rows; **Remember these answers for next time** (on by default) saves them to a local, git-ignored file so the next run of the template starts pre-filled.
+- A separate box handles answers that differ per product: choose the template column and the master column it depends on, then fill one value per entry.
+- The one-at-a-time screen stays available as an option.
+- Acceptance criteria:
+  - [ ] The sheet shows every remaining column on one screen (in tabs) with no more than one button press to apply them all.
+  - [ ] Template suggestions and saved answers pre-fill their rows; Claude proposals below 0.8 confidence are not pre-filled.
+  - [ ] Apply stores a value for each filled row and marks blank rows skipped.
+  - [ ] With remembering on, a second run of the same template pre-fills the saved answers.
+  - [ ] Without an API key the Claude button explains why and nothing breaks.
+
 ### Asking about missing columns
 - Only columns that are not mapped from the master (or are empty in it) generate a question.
 - One column at a time. The agent explains the column and asks for the value.
@@ -119,3 +134,6 @@ Remembering past answers per product category; bulk apply of rules; a history of
 
 ## Revision: built-in rules
 - Added after the learner shared the rule logic of an earlier tool (parent/child pairs, field mappings, brand and metal rules, hardcoded values). The learner chose to keep the Python/Streamlit app and the `.xlsm` output (not the single-file HTML tool with CSV output) and to focus on the rules. Where the earlier prompt and the real files disagree (Variation Theme `Size/Color` vs `COLOR`, `Lab-grown` vs `Lab-Created`, browse node id vs path, Product Id Type `SKU` vs `GTIN Exempt`, brand HSN codes vs the master's `71131914`) the rules follow the real template and hand-filled file.
+
+## Revision: answer sheet
+- The learner found answering about 95 questions one at a time too slow and accepted a recommendation: one pre-filled answer sheet, Claude proposals, and answers remembered between runs. This changes the earlier decision "one column per question" and moves "saving answers across runs" from Later into the build.

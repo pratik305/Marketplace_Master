@@ -70,6 +70,11 @@ Applies the team's listing rules before mapping and questions. Rules live in `ru
 PRD ref: `prd.md > Built-in listing rules`.
 Files: `src/rules.py`, `rules/amazon_in_jewellery.json`, `ui/rules_page.py`.
 
+### Answer sheet
+One screen for every remaining column (`ui/answer_sheet.py`): a form with a tab per template section and a row per column. Each row's initial value comes from the user's last answer, saved answers (`src/answer_store.py`, a local JSON file `answers/saved_answers.json` keyed by the column's attribute key, git-ignored), a Claude proposal at least 0.8 confident (`src/ai.py > propose_answers`, batches of 30 columns, dropdown values must be in the allowed list) or the template's first-row suggestion. The form's single button validates every row, stores `Answer` objects (blank = skip) and saves them. A per-product box builds "depends on a master column" answers. The older one-at-a-time screen (`ui/question_page.py`) remains as an option.
+PRD ref: `prd.md > Answer sheet`.
+Files: `ui/answer_sheet.py`, `src/answer_store.py`, `src/ai.py`.
+
 ### Question flow
 Builds the queue: required template columns not covered by the mapping (or empty in the master), required first. Optional columns are not asked by default; an "also fill optional columns" button adds them. Each question offers three answer modes:
 1. **Same for all rows** — one value (or one dropdown pick).
@@ -151,3 +156,6 @@ marketplace master/
 ## Revision: built-in rules
 - A rules layer was added (see Rules engine). Order of precedence per cell: master mapping < rule < answer, where an answer only fills cells still empty on mapped or rule-filled columns. The rules file is plain JSON so the team can change a rule without code. Verified against the hand-filled file: 51 columns, 95.3% of cells match; differences are image URLs and one unit cell. The question list went from 128 to 95 columns; most of the rest are conditionally required columns that do not apply to rings, so the question screen has a "Skip all conditionally required" button.
 - AI mapping pairs below 0.5 confidence are listed as suggestions and not applied (a live run proposed Product Id <- Sku Code at 0.20).
+
+## Revision: answer sheet
+- Replaced the default question flow with the answer sheet. A live check of Claude's proposals against the hand-filled file: every proposal at 0.8 confidence or more that could be compared was right; at 0.75 and below it was wrong or guessed values the file leaves empty (e.g. Gem Birthstone Month = April). So only 0.8+ proposals are pre-filled. Saved answers live in a git-ignored local file because they hold business details.

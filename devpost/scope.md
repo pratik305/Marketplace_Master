@@ -35,14 +35,14 @@ The "oh, that's cool" beat: hundreds of rows go from mostly empty to complete af
 - Reads the template's rules sheet and data sheet(s)
 - AI proposes the column mapping
 - Built-in listing rules (a JSON file the team can edit) that fill what the team already knows before any question: parent/child rows, product type, metal and units, translations such as "IGI Certificate" -> "IGI", fixed values. Added after the learner shared the rule logic of an earlier tool.
-- Question-and-answer flow for the columns the rules and master don't cover: same-for-all or per-row, dropdown choices offered
+- Answer sheet for the columns the rules and master don't cover: one pre-filled screen, Claude proposals, answers remembered between runs (was one question at a time): same-for-all or per-row, dropdown choices offered
 - Validation of answers against the template rules; every mandatory column must be filled
 - Output keeps the template's file format (VBA-enabled, macros and dropdowns intact)
 - Master file columns (jewelry listings): CODE, BRAND, PLATFORM, CATEGORY, Sku Code, Sku Name, MRP, Selling Price, Sku Size, MP SKU CODE/STYLE ID, NET WEIGHT, GROSS Weight, Diamond Weight, Diamond Count, Diamond Shape, Care Instruction, Manufacture Name (x2), PACK CONTAINS, Country of Origin, Color, Certificate Type, Metal Stamp/Type/Material, Image Url 1-4, Gender, Description
 
 ## Later
 - Other marketplaces (Flipkart, Etsy, etc.)
-- Saving and reusing mappings and answers across runs and templates
+- Saving and reusing mappings across runs and templates (answers are already remembered per template)
 - Automatic checking against the marketplace's own upload validator
 
 ## Explicitly Cut

@@ -14,9 +14,11 @@ Built for a listing team who fill these templates by hand for hundreds of produc
    You can switch them off on the page.
 3. **Map** — columns with matching names are paired automatically; *Ask Claude to map the rest* proposes more
    pairs. You confirm or change any pair.
-4. **Questions** — one required (or conditionally required) column at a time. Answer once for all rows, or say
-   which master column the answer depends on (e.g. Material by Color). Dropdown columns only accept the
-   template's allowed values. Skipping is allowed.
+4. **Answer sheet** — every remaining column on one screen, grouped by template section and pre-filled
+   from your last answers, *Let Claude propose answers* and the template's own suggestions. Fix what is
+   wrong, leave a row blank to skip it, press *Apply all answers*. Answers that differ per product (e.g.
+   Material by Color) have their own box. Answers are remembered on this computer for the next run
+   (`answers/`, git-ignored). A one-at-a-time mode is also available.
 5. **Validation** — what is still empty or doubtful, with a *Fix this* button for each item.
 6. **Download** the filled template. Only the `Template` sheet is edited; dropdown rules, images, hidden
    sheets and everything else in the file are copied across untouched.

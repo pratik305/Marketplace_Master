@@ -23,6 +23,7 @@ def app():
     at = AppTest.from_file(str(Path(__file__).resolve().parent.parent / "app.py"), default_timeout=60)
     at.session_state["master"], at.session_state["template"] = master, tpl
     at.session_state["template_bytes"], at.session_state["template_name"] = tb, "RING (6).xlsm"
+    at.session_state["answer_style"] = "One at a time"            # the older step-by-step screen
     at.run()
     covered = apply_rules(tpl, master, load_rules()).covered()       # the app skips what the rules already fill
     queue = build_queue(tpl, name_match(tpl.columns, master.columns), master, covered=covered)

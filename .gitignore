@@ -5,3 +5,4 @@
 sample/
 __pycache__/
 .pytest_cache/
+answers/

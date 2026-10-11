@@ -11,3 +11,9 @@ def no_real_api_key(monkeypatch):
     Tests that exercise the Claude code paths pass a stand-in client explicitly.
     """
     monkeypatch.setenv("ANTHROPIC_API_KEY", "")
+
+
+@pytest.fixture(autouse=True)
+def isolated_answer_store(monkeypatch, tmp_path):
+    """Never read or write the real saved answers during tests."""
+    monkeypatch.setenv("ANSWERS_FILE", str(tmp_path / "saved_answers.json"))

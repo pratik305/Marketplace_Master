@@ -79,6 +79,16 @@ Build mode: fast
   Learner check: Upload your files, read the rules summary, then go through the questions and confirm that the columns the rules filled (Product Type, Metal Type, Certificate Type, ...) are no longer asked and look right in the downloaded file.
   Commit: `Add built-in listing rules layer`
 
+- [x] **8. Answer the remaining columns on one pre-filled sheet**
+  Becomes usable: One "Answer sheet" with every remaining column in tabs, pre-filled from saved answers, Claude proposals (0.8+ confidence) and template suggestions, applied with one button and remembered for the next run.
+  Why now: Added after the learner found one-question-at-a-time too slow; it keeps the interview's purpose (fill what is missing) at a fraction of the clicks.
+  PRD ref: `prd.md > Answer sheet`
+  Spec ref: `spec.md > Answer sheet`
+  Build: `ui/answer_sheet.py`, `src/answer_store.py`, `propose_answers` in `src/ai.py`; the app offers "Answer sheet" (default) or "One at a time".
+  Verify (mechanical): `tests/test_answer_sheet.py` and `tests/test_answer_sheet_logic.py` check the sheet's rows and pre-fill, apply (blank = skip), saving and reloading answers, Claude proposals (stand-in client) filling blank rows only, and the no-key message; a live run scored Claude's proposals against the hand-filled file.
+  Learner check: Upload your files, press "Let Claude propose answers", fix what is wrong, press "Apply all answers", then upload the same files again and confirm your answers come back pre-filled.
+  Commit: `Add answer sheet with Claude proposals and saved answers`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 3 (upload, download, and AI mapping)
@@ -112,3 +122,4 @@ Activity mode: not started
 - Columns the master fills in only some rows (e.g. Brand Name, empty on parent rows) are asked too, and the answer fills only the empty rows without overwriting master values — found when the validator flagged row 8 after the leftover defaults stopped hiding it.
 - Answer-key result: the three answer modes explain 87 of 90 filled columns exactly; the output matches the hand-filled file in 93.8% of non-empty cells, all differences in Main/Other Image URL and Material, where the hand-filled file made editorial choices (a different main image, photos not in the master).
 - Built-in listing rules added as slice 7 — the learner shared the rule logic of an earlier HTML tool (parent/child pairs, field mappings, brand and metal rules, hardcoded values) and asked to focus on rules while keeping the Python app and `.xlsm` output; where that prompt disagreed with the real template and hand-filled file (Variation Theme, Stone Creation Method, browse node format, Product Id Type, brand HSN codes) the rules follow the real files. Parent rows are taken from the master, which already contains them; generating parents from one-row-per-SKU masters is left for later.
+- Answer sheet added as slice 8 — the learner found one-question-at-a-time too slow (about 95 questions) and accepted the recommendation of one pre-filled sheet, Claude proposals and answers remembered between runs; the earlier decision "one column per question" is replaced and the "saving answers across runs" item moves from Later into the build. Claude proposals are pre-filled only at 0.8+ confidence after a live comparison with the hand-filled file.

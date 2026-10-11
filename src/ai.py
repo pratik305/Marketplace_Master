@@ -113,3 +113,53 @@ def check_answers(client, col, values: list) -> list:
         return [(str(r["value"]), bool(r["ok"]), str(r.get("reason", ""))) for r in data]
     except Exception as exc:
         raise AIUnavailable(f"The AI answer check could not be completed ({type(exc).__name__}).") from exc
+
+
+def propose_answers(client, cols, sample: dict, batch: int = 30) -> dict:
+    """Ask Claude to propose a value for each column the master and rules could not fill.
+
+    `sample` is one representative master row ({master column: value}). Returns
+    {template column index: (value, confidence)}. Dropdown columns only keep values that are in the
+    template's allowed list. Raises AIUnavailable with a plain message when Claude can't be used.
+    """
+    if client is None:
+        raise AIUnavailable("No API key found. Add ANTHROPIC_API_KEY to a local .env file to use AI proposals.")
+    result = {}
+    sample_text = json.dumps({k: str(v)[:60] for k, v in sample.items() if v not in (None, "")}, ensure_ascii=False)
+    for start in range(0, len(cols), batch):
+        chunk = cols[start:start + batch]
+        lines = []
+        for c in chunk:
+            allowed = ("; allowed values: " + " | ".join(c.allowed[:60])) if c.allowed else ""
+            lines.append(f"{c.index} | {c.label} | {c.requirement} | {c.description[:140]} | "
+                         f"example: {c.example[:50]}{allowed}")
+        prompt = (
+            "You are helping fill an Amazon India jewellery listing template (rings, lab-grown diamond, gold). "
+            "A representative product row from the master sheet:\n" + sample_text + "\n\n"
+            "For each template column below (index | label | requirement | description | example), propose the "
+            "single value that is most likely correct for EVERY product of this kind, or leave it out when it "
+            "depends on the product or you are not sure. Never invent measurements, names or identifiers. For "
+            "columns with allowed values the answer must be exactly one of them. Reply with JSON only: "
+            '{"answers": {"<index>": {"value": "<value>", "confidence": 0.0}}}\n\n' + "\n".join(lines)
+        )
+        try:
+            data = _json_from(_ask(client, prompt, max_tokens=3000))["answers"]
+        except Exception as exc:
+            raise AIUnavailable(f"The AI proposals could not be completed ({type(exc).__name__}). "
+                                "You can fill the sheet by hand.") from exc
+        by_index = {c.index: c for c in chunk}
+        for k, v in data.items():
+            try:
+                idx, value, conf = int(k), str(v["value"]).strip(), float(v.get("confidence", 0.5))
+            except (ValueError, KeyError, TypeError, AttributeError):
+                continue
+            col = by_index.get(idx)
+            if col is None or not value:
+                continue
+            if col.allowed:
+                match = {a.lower(): a for a in col.allowed}.get(value.lower())
+                if match is None:
+                    continue
+                value = match
+            result[idx] = (value, max(0.0, min(1.0, conf)))
+    return result
