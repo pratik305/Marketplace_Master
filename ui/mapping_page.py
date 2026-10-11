@@ -17,6 +17,12 @@ def init_mapping(tpl, master):
         st.session_state["mapping_conf"] = {}
 
 
+def ensure(tpl, master):
+    """The current mapping, created from name matching the first time (no screen output)."""
+    init_mapping(tpl, master)
+    return st.session_state["mapping"]
+
+
 def render(tpl, master):
     init_mapping(tpl, master)
     mapping, source, conf = (st.session_state["mapping"], st.session_state["mapping_source"],

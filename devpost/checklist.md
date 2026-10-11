@@ -89,6 +89,16 @@ Build mode: fast
   Learner check: Upload your files, press "Let Claude propose answers", fix what is wrong, press "Apply all answers", then upload the same files again and confirm your answers come back pre-filled.
   Commit: `Add answer sheet with Claude proposals and saved answers`
 
+- [x] **9. A cleaner four-step site that is easy to handle**
+  Becomes usable: A header, clickable step bar with progress, summary chips and one short screen per step (Upload, Prepare, Answers, Check & download) with Back / Continue buttons and larger light-coloured controls.
+  Why now: Added after the learner asked for the site to look better and be easier to handle.
+  PRD ref: `prd.md > Four-step layout`
+  Spec ref: `spec.md > Page frame and steps`
+  Build: `ui/layout.py`, `ui/upload_page.py`, `app.py`; rules page split into compute and display; "Fix this" returns to the Answers step.
+  Verify (mechanical): `tests/test_steps.py` walks every step with the buttons and the step bar; the older screen tests open on the right step; a real-browser screenshot of each step was reviewed.
+  Learner check: Run the app, upload your files, click through the four steps, and say whether each screen is clear and quick to use.
+  Commit: `Redesign as a four-step site`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 3 (upload, download, and AI mapping)
@@ -123,3 +133,4 @@ Activity mode: not started
 - Answer-key result: the three answer modes explain 87 of 90 filled columns exactly; the output matches the hand-filled file in 93.8% of non-empty cells, all differences in Main/Other Image URL and Material, where the hand-filled file made editorial choices (a different main image, photos not in the master).
 - Built-in listing rules added as slice 7 — the learner shared the rule logic of an earlier HTML tool (parent/child pairs, field mappings, brand and metal rules, hardcoded values) and asked to focus on rules while keeping the Python app and `.xlsm` output; where that prompt disagreed with the real template and hand-filled file (Variation Theme, Stone Creation Method, browse node format, Product Id Type, brand HSN codes) the rules follow the real files. Parent rows are taken from the master, which already contains them; generating parents from one-row-per-SKU masters is left for later.
 - Answer sheet added as slice 8 — the learner found one-question-at-a-time too slow (about 95 questions) and accepted the recommendation of one pre-filled sheet, Claude proposals and answers remembered between runs; the earlier decision "one column per question" is replaced and the "saving answers across runs" item moves from Later into the build. Claude proposals are pre-filled only at 0.8+ confidence after a live comparison with the hand-filled file.
+- Four-step layout added as slice 9 — the learner asked for the site to look better and be easier to handle; the single long page became four short steps. No product decision changed.

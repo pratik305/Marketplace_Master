@@ -13,6 +13,8 @@ def _fix(col, tpl, master, mapping):
                         ss.get("rule_covered", ()))
     ss["q_index"] = next(i for i, c in enumerate(queue) if c.index == col.index)
     ss["answers"].pop(col.index, None)
+    ss.pop(f"sheet_{col.index}", None)         # let the sheet show a fresh row for this column
+    ss["step"] = 3                             # and go back to the answers
 
 
 def _rows_text(rows, n=6):
@@ -25,7 +27,6 @@ def render(tpl, master, mapping, rows):
     must = blocking(issues)
     check = [i for i in issues if i not in must]
 
-    st.subheader("Validation")
     a, b, c = st.columns(3)
     a.metric("Rows to write", len(rows))
     b.metric("Must fix", len(must))
@@ -34,7 +35,7 @@ def render(tpl, master, mapping, rows):
         st.success("Every required column is filled in every row."
                    + (" A few items below are worth a look." if check else " No remaining problems."))
     else:
-        st.error("Some required columns are still empty. Fix them before you upload to Amazon.")
+        st.error("Some required columns are still empty. Press Fix this on a row to go back and answer it.")
 
     for group, title, expanded in ((must, "Must fix", True), (check, "Check these", False)):
         if not group:

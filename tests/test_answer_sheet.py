@@ -20,6 +20,7 @@ def make_app():
     at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120)
     at.session_state["master"], at.session_state["template"] = read_master(MASTER.read_bytes()), read_template(tb)
     at.session_state["template_bytes"], at.session_state["template_name"] = tb, "RING (6).xlsm"
+    at.session_state["step"] = 3                                  # the Answers step
     at.run()
     return at
 

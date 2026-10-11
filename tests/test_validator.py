@@ -97,6 +97,7 @@ def test_validation_screen_flags_then_fix_reopens_the_question(ctx):
     at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=90)
     at.session_state["master"], at.session_state["template"] = master, info
     at.session_state["template_bytes"], at.session_state["template_name"] = tb, "RING (6).xlsm"
+    at.session_state["step"] = 4                                  # the Check & download step
     at.run()
     assert not at.exception
     assert any("Required columns are still empty" in e.value or "required columns are still empty" in e.value
@@ -104,6 +105,7 @@ def test_validation_screen_flags_then_fix_reopens_the_question(ctx):
     fix = next(b for b in at.button if b.label == "Fix this")
     fix.click()
     at.run()
+    assert at.session_state["step"] == 3                      # "Fix this" goes back to the answers
     assert not at.exception
     queue = build_queue(info, at.session_state["mapping"], master, False, at.session_state["q_extra"])
     assert queue[at.session_state["q_index"]].required        # jumped to a required column's question

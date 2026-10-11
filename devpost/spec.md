@@ -75,6 +75,11 @@ One screen for every remaining column (`ui/answer_sheet.py`): a form with a tab 
 PRD ref: `prd.md > Answer sheet`.
 Files: `ui/answer_sheet.py`, `src/answer_store.py`, `src/ai.py`.
 
+### Page frame and steps
+`app.py` runs four steps (`st.session_state["step"]`): Upload (`ui/upload_page.py`), Prepare (`ui/rules_page.py` and `ui/mapping_page.py` in two tabs), Answers (`ui/answer_sheet.py`, or `ui/question_page.py` as an option) and Check & download (`ui/validation_page.py` plus the download button). `ui/layout.py` holds the light theme CSS, the header banner, the clickable step bar, summary chips and the Back / Continue buttons. The rules and mapping are computed on every step so the answer sheet and validation always know what was filled. Reading the files happens in a button callback (no manual reruns).
+PRD ref: `prd.md > Four-step layout`.
+Files: `app.py`, `ui/layout.py`, `ui/upload_page.py`.
+
 ### Question flow
 Builds the queue: required template columns not covered by the mapping (or empty in the master), required first. Optional columns are not asked by default; an "also fill optional columns" button adds them. Each question offers three answer modes:
 1. **Same for all rows** — one value (or one dropdown pick).
@@ -159,3 +164,6 @@ marketplace master/
 
 ## Revision: answer sheet
 - Replaced the default question flow with the answer sheet. A live check of Claude's proposals against the hand-filled file: every proposal at 0.8 confidence or more that could be compared was right; at 0.75 and below it was wrong or guessed values the file leaves empty (e.g. Gem Birthstone Month = April). So only 0.8+ proposals are pre-filled. Saved answers live in a git-ignored local file because they hold business details.
+
+## Revision: four-step layout
+- Verified with a real browser screenshot of each step. Streamlit theme is set in `.streamlit/config.toml` and refined with CSS in `ui/layout.py`.

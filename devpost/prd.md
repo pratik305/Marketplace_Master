@@ -40,6 +40,17 @@ Light colors, light background. Plain and functional; usability matters more tha
   - [ ] After upload, every template column shows either a proposed master column or "not mapped".
   - [ ] The user can change any pair before moving on.
 
+### Four-step layout
+Changed after the learner asked for a better-looking, easier-to-handle site. Replaces the single long page in `Screens and Layout`.
+- A header banner, a clickable step bar with a progress line (**1 Upload, 2 Prepare, 3 Answers, 4 Check & download**; finished steps show a tick; steps after Upload unlock once the files are read) and summary chips (rows, columns filled by rules, columns mapped, answers given).
+- **Upload**: two upload cards, a Read files button, and what the tool understood. **Prepare**: tabs for the built-in rules and the column mapping. **Answers**: the answer sheet. **Check & download**: validation, then one large Download button.
+- Back and Continue buttons on every step; "Fix this" in the validation list jumps back to the Answers step.
+- Light colours throughout, bigger buttons and clear spacing (usability over decoration).
+- Acceptance criteria:
+  - [ ] Before files are read only Upload is available; reading valid files moves to Prepare.
+  - [ ] Each step shows only its own content; Back, Continue and the step bar all navigate.
+  - [ ] "Fix this" on a validation item returns to the Answers step.
+
 ### Built-in listing rules
 Source: the learner's rule logic (parent/child rows, product type, metal, units, fixed values), checked against the hand-filled Amazon file. Implements `scope.md > The POC Boundary` (built-in listing rules).
 - Before the mapping and questions, the tool applies the rules in `rules/amazon_in_jewellery.json`. The user can switch them off.
@@ -137,3 +148,6 @@ Remembering past answers per product category; bulk apply of rules; a history of
 
 ## Revision: answer sheet
 - The learner found answering about 95 questions one at a time too slow and accepted a recommendation: one pre-filled answer sheet, Claude proposals, and answers remembered between runs. This changes the earlier decision "one column per question" and moves "saving answers across runs" from Later into the build.
+
+## Revision: four-step layout
+- The learner asked for the site to look better and be easier to handle. The single long page became four short steps with a step bar, summary chips and larger light-coloured controls.

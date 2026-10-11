@@ -8,6 +8,8 @@ Built for a listing team who fill these templates by hand for hundreds of produc
 
 ## How it works
 
+Four short steps, with a step bar at the top: **Upload, Prepare, Answers, Check & download**.
+
 1. **Upload** the master sheet (`.xlsx`) and the Amazon template (`.xlsm`).
 2. **Rules** — built-in listing rules (`rules/amazon_in_jewellery.json`, editable) fill what your team
    already knows: parent/child rows, product type, metal and units, fixed values, translated values.

@@ -168,7 +168,8 @@ def render(tpl, master, mapping):
         if col.group not in groups:
             groups.append(col.group)
     with st.form("answer_sheet"):
-        tabs = st.tabs([f"{g or 'Other'} ({sum(1 for c in queue if c.group == g)})" for g in groups])
+        short = lambda g: (g if len(g) <= 24 else g[:23].rstrip() + "…") or "Other"
+        tabs = st.tabs([f"{short(g)} ({sum(1 for c in queue if c.group == g)})" for g in groups])
         for tab, group in zip(tabs, groups):
             with tab:
                 for col in [c for c in queue if c.group == group]:
