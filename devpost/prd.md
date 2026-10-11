@@ -40,6 +40,18 @@ Light colors, light background. Plain and functional; usability matters more tha
   - [ ] After upload, every template column shows either a proposed master column or "not mapped".
   - [ ] The user can change any pair before moving on.
 
+### AI review (last step)
+Added after the learner asked for a final step where AI validates the file against the template's rules and regulations. Implements `scope.md > The Unique Kernel` (every column filled and valid) one level deeper.
+- Step 5, "AI review & download": **Run the AI review** sends Claude the template's own rule text (the Instructions sheet and each column's description), the allowed values, per-column statistics of the rows about to be written, and a few sample parent and child rows (not the whole file).
+- Claude lists findings ranked high / medium / low. Each finding names the column, says what is wrong and what to do, and says where it comes from: **Template rule** (with the template text quoted) or **General knowledge - verify** (for example BIS hallmarking or Legal Metrology expectations). Nothing is presented as law that the template did not say.
+- It is advice, not a guarantee or legal advice: Amazon's own upload check is the final judge. Download is available on step 4 and step 5, so the review never blocks it.
+- A finding for a template column has **Fix this**, which returns to the Answers step. If the answers change after a review, the review is marked out of date.
+- Acceptance criteria:
+  - [ ] Without an API key the step explains why and the download still works.
+  - [ ] Findings show severity, the source (template rule or general knowledge) and a suggestion.
+  - [ ] A reply cut off mid-finding still shows the complete findings.
+  - [ ] Run against the learner's hand-filled file, the review finds real issues (expired sale dates, 0 mm dimensions, inconsistent stone details) and does not invent data.
+
 ### Four-step layout
 Changed after the learner asked for a better-looking, easier-to-handle site. Replaces the single long page in `Screens and Layout`.
 - A header banner, a clickable step bar with a progress line (**1 Upload, 2 Prepare, 3 Answers, 4 Check & download**; finished steps show a tick; steps after Upload unlock once the files are read) and summary chips (rows, columns filled by rules, columns mapped, answers given).
@@ -151,3 +163,6 @@ Remembering past answers per product category; bulk apply of rules; a history of
 
 ## Revision: four-step layout
 - The learner asked for the site to look better and be easier to handle. The single long page became four short steps with a step bar, summary chips and larger light-coloured controls.
+
+## Revision: AI review step
+- The learner asked for a last step where AI validates the file against the rules and regulations. The flow is now five steps (Upload, Prepare, Answers, Check, AI review & download). The review found that the rules' Variation Theme `COLOR` contradicted the data (children differ by colour and ring size), so the rule is now `COLOR/RING_SIZE`, matching the learner's original "Size/Color".

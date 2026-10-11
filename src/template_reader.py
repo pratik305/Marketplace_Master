@@ -43,6 +43,7 @@ class TemplateInfo:
     key_row: int
     data_row: int
     defaults: dict = field(default_factory=dict)   # column index -> value pre-filled in the first data row
+    instructions: list = field(default_factory=list)   # text lines from the template's "Instructions" sheet
 
     def required_columns(self):
         return [c for c in self.columns if c.required]
@@ -125,5 +126,9 @@ def read_template(data: bytes) -> TemplateInfo:
         raise TemplateError("No columns were found in the Template sheet.")
     defaults = {c.index: ws.cell(data_row, c.index).value for c in columns
                 if ws.cell(data_row, c.index).value not in (None, "")}
+    instructions = []
+    if "Instructions" in wb.sheetnames:
+        for row in wb["Instructions"].iter_rows(values_only=True):
+            instructions += [_text(v) for v in row if _text(v)]
     return TemplateInfo(columns=columns, label_row=label_row, key_row=key_row,
-                        data_row=data_row, defaults=defaults)
+                        data_row=data_row, defaults=defaults, instructions=instructions)

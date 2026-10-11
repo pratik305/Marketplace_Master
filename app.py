@@ -1,10 +1,10 @@
-"""Marketplace Template Filler - Streamlit entry point: four short steps."""
+"""Marketplace Template Filler - Streamlit entry point: five short steps."""
 import streamlit as st
 
 from src.questions import SKIP, build_queue, resolve_all
 from src.result import build_rows
 from src.xlsm_writer import WriterError, fill_template
-from ui import (answer_sheet, layout, mapping_page, question_page, rules_page, upload_page,
+from ui import (answer_sheet, layout, mapping_page, question_page, review_page, rules_page, upload_page,
                 validation_page)
 
 st.set_page_config(page_title="Marketplace Template Filler", layout="wide")
@@ -53,18 +53,29 @@ elif step == 3:
     style_choice = st.radio("How do you want to answer?", ["Answer sheet", "One at a time"], horizontal=True,
                             key="answer_style")
     (answer_sheet if style_choice == "Answer sheet" else question_page).render(tpl, master, mapping)
-    layout.nav(back_to=2, next_to=4, next_label="Continue to check & download")
+    layout.nav(back_to=2, next_to=4, next_label="Continue to check")
 
 else:
-    layout.help_text("Check what is left, then download your filled template.")
     rows = build_rows(tpl, master, mapping, resolve_all(answers, master), rule_res.values if rule_res else None)
-    validation_page.render(tpl, master, mapping, rows)
-    st.markdown("#### Download")
-    try:
-        out = fill_template(ss["template_bytes"], tpl.data_row, rows)
-        st.download_button("Download filled template", out, file_name="filled_" + ss.get("template_name", "template.xlsm"),
-                           mime="application/vnd.ms-excel.sheet.macroEnabled.12", use_container_width=True)
-        st.caption("Same file type and layout as your template, with the data filled in.")
-    except WriterError as err:
-        st.error(str(err))
-    layout.nav(back_to=3)
+
+    def download_block(key):
+        try:
+            out = fill_template(ss["template_bytes"], tpl.data_row, rows)
+            st.download_button("Download filled template", out, key=key,
+                               file_name="filled_" + ss.get("template_name", "template.xlsm"),
+                               mime="application/vnd.ms-excel.sheet.macroEnabled.12", use_container_width=True)
+            st.caption("Same file type and layout as your template, with the data filled in.")
+        except WriterError as err:
+            st.error(str(err))
+
+    if step == 4:
+        layout.help_text("Check what is left. You can download now, or run the AI review first.")
+        validation_page.render(tpl, master, mapping, rows)
+        st.markdown("#### Download")
+        download_block("download_check")
+        layout.nav(back_to=3, next_to=5, next_label="Continue to the AI review")
+    else:
+        review_page.render(tpl, master, mapping, rows)
+        st.markdown("#### Download")
+        download_block("download_final")
+        layout.nav(back_to=4)

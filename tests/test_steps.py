@@ -32,7 +32,7 @@ def test_before_files_are_read_only_upload_is_open():
     at = app(False, step=3)                                   # even asking for step 3 lands on Upload
     assert not at.exception and at.session_state["step"] == 1
     btns = list(step_buttons(at).values())
-    assert len(btns) == 4 and btns[0].disabled is False and all(b.disabled for b in btns[1:])
+    assert len(btns) == 5 and btns[0].disabled is False and all(b.disabled for b in btns[1:])
     assert any(b.label == "Read files" and b.disabled for b in at.button)       # needs both files
     assert not at.dataframe                                    # nothing else is shown yet
 
@@ -46,10 +46,13 @@ def test_walk_through_all_steps_with_the_navigation_buttons():
     assert at.session_state["step"] == 3 and "Answer sheet" in [s.value for s in at.subheader]
     next(b for b in at.button if "Continue to check" in b.label).click()
     at.run()
-    assert at.session_state["step"] == 4 and at.download_button if hasattr(at, "download_button") else True
+    assert at.session_state["step"] == 4 and not at.exception
+    next(b for b in at.button if "AI review" in b.label).click()
+    at.run()
+    assert at.session_state["step"] == 5 and not at.exception
     next(b for b in at.button if "Back" in b.label).click()
     at.run()
-    assert at.session_state["step"] == 3 and not at.exception
+    assert at.session_state["step"] == 4 and not at.exception
 
 
 @pytest.mark.skipif(not (TEMPLATE.exists() and MASTER.exists()), reason="sample/ files not present")

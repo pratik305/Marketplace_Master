@@ -1,7 +1,7 @@
 """Page frame: soft light theme, header, clickable step bar and Back / Continue navigation."""
 import streamlit as st
 
-STEPS = ["Upload", "Prepare", "Answers", "Check & download"]
+STEPS = ["Upload", "Prepare", "Answers", "Check", "AI review & download"]
 
 CSS = """
 <style>

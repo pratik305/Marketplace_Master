@@ -99,6 +99,16 @@ Build mode: fast
   Learner check: Run the app, upload your files, click through the four steps, and say whether each screen is clear and quick to use.
   Commit: `Redesign as a four-step site`
 
+- [x] **10. A last AI review step checks the file against the template's rules**
+  Becomes usable: A fifth step, "AI review & download", where Claude reads the template's own rule text and the finished data and lists ranked findings with their source (template rule or general knowledge), plus Fix this and download.
+  Why now: Added after the learner asked for AI validation against the file's rules and regulations as the last step.
+  PRD ref: `prd.md > AI review (last step)`
+  Spec ref: `spec.md > AI review`
+  Build: `src/review.py`, `ui/review_page.py`, instructions read in `src/template_reader.py`, five-step flow in `app.py` and `ui/layout.py`.
+  Verify (mechanical): `tests/test_review.py` checks the context, parsing, ranking, truncated replies, failure messages and the screen (stand-in client); a live run reviewed the hand-filled file and our own output.
+  Learner check: Go to the last step, run the AI review, read the findings, and say which ones are useful and which are noise.
+  Commit: `Add AI review step`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 3 (upload, download, and AI mapping)
@@ -134,3 +144,4 @@ Activity mode: not started
 - Built-in listing rules added as slice 7 — the learner shared the rule logic of an earlier HTML tool (parent/child pairs, field mappings, brand and metal rules, hardcoded values) and asked to focus on rules while keeping the Python app and `.xlsm` output; where that prompt disagreed with the real template and hand-filled file (Variation Theme, Stone Creation Method, browse node format, Product Id Type, brand HSN codes) the rules follow the real files. Parent rows are taken from the master, which already contains them; generating parents from one-row-per-SKU masters is left for later.
 - Answer sheet added as slice 8 — the learner found one-question-at-a-time too slow (about 95 questions) and accepted the recommendation of one pre-filled sheet, Claude proposals and answers remembered between runs; the earlier decision "one column per question" is replaced and the "saving answers across runs" item moves from Later into the build. Claude proposals are pre-filled only at 0.8+ confidence after a live comparison with the hand-filled file.
 - Four-step layout added as slice 9 — the learner asked for the site to look better and be easier to handle; the single long page became four short steps. No product decision changed.
+- AI review added as slice 10 — the learner asked for a last step validating the file with AI against the file's rules and regulations; the flow is now five steps. The live review showed the rules' Variation Theme `COLOR` was wrong for children that differ by ring size, so the rule became `COLOR/RING_SIZE` (the learner's earlier prompt said Size/Color). Live runs also exposed a reply cut off by the length limit, now handled.

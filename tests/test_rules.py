@@ -91,9 +91,11 @@ def test_rules_reproduce_the_hand_filled_file(ctx):
                 differing[info.columns[idx - 1].label] = differing.get(info.columns[idx - 1].label, 0) + 1
     print(f"\nrules: {len(res.values)} columns, {matched}/{total} cells match ({matched / total:.1%}); "
           f"differing: {differing}")
-    assert len(res.values) >= 45 and matched / total >= 0.94
-    # the differences are the editorial picks in the hand-filled file (images), plus one unit cell
-    assert set(differing) <= {"Main Image URL", "Other Image URL", "Item Weight Unit"}
+    assert len(res.values) >= 45 and matched / total >= 0.92
+    # the differences are the editorial picks in the hand-filled file (images), one unit cell, and the variation
+    # theme: the rules use COLOR/RING_SIZE because the children differ by colour AND ring size (the AI review
+    # flagged the hand-filled file's plain COLOR, and the template says all theme attributes must be populated)
+    assert set(differing) <= {"Main Image URL", "Other Image URL", "Item Weight Unit", "Variation Theme Name"}
 
 
 def test_rule_values_fit_the_templates_dropdowns(ctx):

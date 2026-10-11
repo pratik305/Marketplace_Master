@@ -8,7 +8,7 @@
   },
   "constants": {
     "Listing Action": "full_update",
-    "Variation Theme Name": "COLOR",
+    "Variation Theme Name": "COLOR/RING_SIZE",
     "Item Type Name": "Rings",
     "Jewelry Material Categorization": "fine",
     "Number of Items": 1,

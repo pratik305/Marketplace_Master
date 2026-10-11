@@ -80,6 +80,11 @@ Files: `ui/answer_sheet.py`, `src/answer_store.py`, `src/ai.py`.
 PRD ref: `prd.md > Four-step layout`.
 Files: `app.py`, `ui/layout.py`, `ui/upload_page.py`.
 
+### AI review
+`src/review.py` builds a compact context (the template's Instructions text up to 3,500 characters, per-column rule text, requirement, allowed values, fill statistics and top values, and five sample rows: the first parent and four children), asks Claude for at most 20 findings as JSON, and parses them. Each finding carries severity, issue, suggestion, the quoted template rule and a source of `template` or `general`. A reply that is not valid JSON, for example one cut off by the length limit (seen in a live run at 4,000 tokens, now 8,000), is salvaged: every complete finding is kept. `ui/review_page.py` shows the findings, marks a stored review out of date when the data's fingerprint changes, and offers Fix this. `TemplateInfo.instructions` is read from the template's Instructions sheet.
+PRD ref: `prd.md > AI review (last step)`.
+Files: `src/review.py`, `ui/review_page.py`, `src/template_reader.py`.
+
 ### Question flow
 Builds the queue: required template columns not covered by the mapping (or empty in the master), required first. Optional columns are not asked by default; an "also fill optional columns" button adds them. Each question offers three answer modes:
 1. **Same for all rows** — one value (or one dropdown pick).
@@ -167,3 +172,6 @@ marketplace master/
 
 ## Revision: four-step layout
 - Verified with a real browser screenshot of each step. Streamlit theme is set in `.streamlit/config.toml` and refined with CSS in `ui/layout.py`.
+
+## Revision: AI review step
+- Live check: on the learner's hand-filled file the review returned 16 findings in about 30 seconds (for example sale dates in 2017, item length/width/height of 0, Stone Clarity VS2-SI1 vs VS1 for the same stone, item weight equal to metal weight, no BIS hallmark information). Known noise: it also flags case differences such as `female` vs `Female`, which the file deliberately stores as Amazon's internal values.

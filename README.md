@@ -8,7 +8,7 @@ Built for a listing team who fill these templates by hand for hundreds of produc
 
 ## How it works
 
-Four short steps, with a step bar at the top: **Upload, Prepare, Answers, Check & download**.
+Five short steps, with a step bar at the top: **Upload, Prepare, Answers, Check, AI review & download**.
 
 1. **Upload** the master sheet (`.xlsx`) and the Amazon template (`.xlsm`).
 2. **Rules** — built-in listing rules (`rules/amazon_in_jewellery.json`, editable) fill what your team
@@ -22,7 +22,9 @@ Four short steps, with a step bar at the top: **Upload, Prepare, Answers, Check 
    Material by Color) have their own box. Answers are remembered on this computer for the next run
    (`answers/`, git-ignored). A one-at-a-time mode is also available.
 5. **Validation** — what is still empty or doubtful, with a *Fix this* button for each item.
-6. **Download** the filled template. Only the `Template` sheet is edited; dropdown rules, images, hidden
+6. **AI review** (optional) — Claude reads the template's own rules and your finished data and lists what looks
+   wrong, ranked, each marked *template rule* or *general knowledge - verify*. It is advice, not legal advice.
+7. **Download** the filled template. Only the `Template` sheet is edited; dropdown rules, images, hidden
    sheets and everything else in the file are copied across untouched.
 
 ## Run it
