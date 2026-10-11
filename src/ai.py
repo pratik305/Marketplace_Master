@@ -14,6 +14,34 @@ class AIUnavailable(Exception):
     """Raised with a plain message when Claude can't be used."""
 
 
+def plain_error(exc, task="AI request") -> str:
+    """Turn an API failure into a sentence a person can act on.
+
+    The Anthropic SDK reports a low credit balance as a generic "BadRequestError" (HTTP 400), which tells
+    nobody what to do, so the status code and the message are read here.
+    """
+    status = getattr(exc, "status_code", None)
+    detail = str(getattr(exc, "body", None) or getattr(exc, "message", None) or exc)
+    low = detail.lower()
+    name = type(exc).__name__
+    if "credit balance" in low:
+        return ("Your Anthropic API credit balance is too low. Add credits under Plans & Billing at "
+                "console.anthropic.com, then try again. (A Claude.ai chat subscription is separate from API credits.)")
+    if status == 401 or name == "AuthenticationError":
+        return "The Claude API key was rejected. Check the ANTHROPIC_API_KEY line in your .env file."
+    if status == 403 or name == "PermissionDeniedError":
+        return "This API key is not allowed to use that model. Check the key's permissions in the Anthropic console."
+    if status == 429 or name == "RateLimitError":
+        return "The Claude API rate limit was reached. Wait a minute and try again."
+    if (status and status >= 500) or name in ("InternalServerError", "OverloadedError"):
+        return "The Claude service is busy or down right now. Try again in a few minutes."
+    if name in ("APIConnectionError", "APITimeoutError"):
+        return "Could not reach the Claude API. Check your internet connection and try again."
+    if status == 400:
+        return f"Claude rejected the request: {detail[:160]}"
+    return f"The {task} could not be completed ({name})."
+
+
 def get_client():
     """Return an Anthropic client, or None when no key is configured."""
     try:
@@ -73,8 +101,7 @@ def propose_mapping(client, template_columns, master, already: dict) -> dict:
     except AIUnavailable:
         raise
     except Exception as exc:
-        raise AIUnavailable(f"The AI mapping could not be completed ({type(exc).__name__}). "
-                            "You can map the columns by hand.") from exc
+        raise AIUnavailable(plain_error(exc, "AI mapping") + " You can map the columns by hand.") from exc
     valid_idx = {t.index for t in targets}
     result = {}
     for k, v in data.items():
@@ -112,7 +139,7 @@ def check_answers(client, col, values: list) -> list:
         data = _json_from(_ask(client, prompt, max_tokens=1000))["results"]
         return [(str(r["value"]), bool(r["ok"]), str(r.get("reason", ""))) for r in data]
     except Exception as exc:
-        raise AIUnavailable(f"The AI answer check could not be completed ({type(exc).__name__}).") from exc
+        raise AIUnavailable(plain_error(exc, "AI answer check")) from exc
 
 
 def propose_answers(client, cols, sample: dict, batch: int = 30) -> dict:
@@ -145,8 +172,7 @@ def propose_answers(client, cols, sample: dict, batch: int = 30) -> dict:
         try:
             data = _json_from(_ask(client, prompt, max_tokens=3000))["answers"]
         except Exception as exc:
-            raise AIUnavailable(f"The AI proposals could not be completed ({type(exc).__name__}). "
-                                "You can fill the sheet by hand.") from exc
+            raise AIUnavailable(plain_error(exc, "AI proposals") + " You can fill the sheet by hand.") from exc
         by_index = {c.index: c for c in chunk}
         for k, v in data.items():
             try:

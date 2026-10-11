@@ -64,3 +64,44 @@ def test_garbage_reply_is_a_plain_error(files):
 def test_low_confidence_pairs_are_not_applied_automatically():
     from ui.mapping_page import MIN_CONFIDENCE
     assert 0.3 < MIN_CONFIDENCE <= 0.6        # live run showed junk pairs at 0.2-0.3 and sound ones from 0.5
+
+
+class _ApiError(Exception):
+    """Stands in for an Anthropic SDK error: they carry a status code and a body."""
+    def __init__(self, status, body, name="BadRequestError"):
+        super().__init__(str(body))
+        self.status_code, self.body = status, body
+        self.__class__ = type(name, (_ApiError,), {})
+
+
+def test_api_failures_are_explained_in_plain_words():
+    credit = _ApiError(400, {"type": "error", "error": {"type": "invalid_request_error",
+                      "message": "Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing"}})
+    msg = ai.plain_error(credit)
+    assert "credit balance is too low" in msg and "Plans & Billing" in msg and "BadRequestError" not in msg
+    assert "key was rejected" in ai.plain_error(_ApiError(401, "invalid x-api-key", "AuthenticationError"))
+    assert "rate limit" in ai.plain_error(_ApiError(429, "slow down", "RateLimitError")).lower()
+    assert "busy or down" in ai.plain_error(_ApiError(529, "overloaded", "InternalServerError"))
+    assert "internet connection" in ai.plain_error(_ApiError(None, "x", "APIConnectionError"))
+    assert "rejected the request: model not found" in ai.plain_error(_ApiError(400, "model not found"))
+    assert ai.plain_error(ValueError("x"), "AI mapping") == "The AI mapping could not be completed (ValueError)."
+
+
+def test_a_low_credit_balance_reaches_the_user_with_advice(monkeypatch):
+    from types import SimpleNamespace
+    credit = _ApiError(400, "Your credit balance is too low to access the Anthropic API.")
+
+    def boom(**kw):
+        raise credit
+    client = SimpleNamespace(messages=SimpleNamespace(create=boom))
+    from src.template_reader import read_template
+    from pathlib import Path
+    tpl_path = Path(__file__).resolve().parent.parent / "sample" / "RING (6).xlsm"
+    if not tpl_path.exists():
+        pytest.skip("sample/ files not present")
+    info = read_template(tpl_path.read_bytes())
+    import pandas as pd
+    with pytest.raises(ai.AIUnavailable, match="credit balance is too low.*by hand"):
+        ai.propose_mapping(client, info.columns, pd.DataFrame({"Sku Code": ["a"]}), {})
+    with pytest.raises(ai.AIUnavailable, match="credit balance is too low"):
+        ai.propose_answers(client, info.columns[:3], {})

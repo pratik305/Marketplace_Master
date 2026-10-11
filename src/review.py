@@ -10,7 +10,7 @@ import re
 from collections import Counter
 from dataclasses import dataclass, field
 
-from src.ai import AIUnavailable, _ask, _json_from
+from src.ai import AIUnavailable, _ask, _json_from, plain_error
 
 MAX_INSTRUCTIONS_CHARS = 3500
 MAX_FINDINGS = 20
@@ -150,8 +150,7 @@ def run_review(client, info, rows: list) -> Review:
     except AIUnavailable:
         raise
     except Exception as exc:
-        raise AIUnavailable(f"The AI review could not be completed ({type(exc).__name__}). "
-                            "The checks on the previous step still apply.") from exc
+        raise AIUnavailable(plain_error(exc, "AI review") + " The checks on the previous step still apply.") from exc
 
 
 def fingerprint(rows: list) -> str:
