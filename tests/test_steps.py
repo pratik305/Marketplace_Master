@@ -69,5 +69,5 @@ def test_step_bar_jumps_and_marks_finished_steps():
 def test_summary_chips_and_theme_are_present():
     at = app(True, step=3)
     html = " ".join(m.value for m in at.markdown)
-    assert "columns filled by rules" in html and "answers given" in html      # summary chips
-    assert "hero-title" in html and "#1f6feb" in html                           # header and the light theme CSS
+    assert "columns filled by rules" in html and "answers given" in html      # the quiet summary line
+    assert "mast-title" in html and "--accent" in html                         # masthead and the theme stylesheet

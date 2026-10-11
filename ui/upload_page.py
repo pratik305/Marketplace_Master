@@ -61,5 +61,7 @@ def render():
         d.metric("Required / conditional",
                  f"{len(tpl.required_columns())} / {len(tpl.must_address()) - len(tpl.required_columns())}")
         with st.expander("Master preview"):
-            st.dataframe(master.head(20), use_container_width=True)
+            photos = {str(c): st.column_config.ImageColumn(str(c), width="small")
+                      for c in master.columns if "image url" in str(c).lower()}
+            st.dataframe(master.head(20), use_container_width=True, column_config=photos)
         layout.nav(next_to=2, next_label="Continue to prepare")

@@ -4,8 +4,8 @@ import streamlit as st
 from src.questions import SKIP, build_queue, resolve_all
 from src.result import build_rows
 from src.xlsm_writer import WriterError, fill_template
-from ui import (answer_sheet, layout, mapping_page, question_page, review_page, rules_page, upload_page,
-                validation_page)
+from ui import (answer_sheet, layout, mapping_page, product_strip, question_page, review_page, rules_page,
+                upload_page, validation_page)
 
 st.set_page_config(page_title="Marketplace Template Filler", layout="wide")
 layout.inject()
@@ -31,11 +31,12 @@ answers = ss.setdefault("answers", {})
 queue = build_queue(tpl, mapping, master, ss.get("include_optional", False), ss.get("q_extra", set()),
                     ss.get("rule_covered", ()))
 done = sum(1 for c in queue if answers.get(c.index) and answers[c.index].mode != SKIP)
-st.markdown(layout.chip(f"{len(master)} rows", "gray")
-            + layout.chip(f"{len(rule_res.values) if rule_res else 0} columns filled by rules", "green")
-            + layout.chip(f"{len(mapping)} mapped from the master", "blue")
-            + layout.chip(f"{done} of {len(queue)} answers given", "amber" if done < len(queue) else "green"),
-            unsafe_allow_html=True)
+layout.summary_line([(len(master), "rows"), (len(rule_res.values) if rule_res else 0, "columns filled by rules"),
+                     (len(mapping), "mapped from the master"), (f"{done} of {len(queue)}", "answers given")])
+parent_flags = rule_res.is_parent if rule_res else None
+
+if step in (2, 3):
+    product_strip.render(tpl, master, None, parent_flags)
 
 if step == 2:
     layout.help_text("The rules and the column mapping run first, so you only answer what is left. "
@@ -68,6 +69,7 @@ else:
         except WriterError as err:
             st.error(str(err))
 
+    product_strip.render(tpl, master, rows, parent_flags, detail=True)
     if step == 4:
         layout.help_text("Check what is left. You can download now, or run the AI review first.")
         validation_page.render(tpl, master, mapping, rows)

@@ -11,7 +11,7 @@ from src.answer_store import load_answers, save_answers, store_path
 from src.questions import (CONST, LOOKUP, MAX_LOOKUP_VALUES, SKIP, Answer, build_queue, check_value,
                            distinct_values)
 from src.result import clean
-from ui import style
+from ui import layout, style
 
 MIN_AI_CONFIDENCE = 0.8       # below this a Claude proposal is only shown as a hint, never pre-filled
                               # (checked against a hand-filled file: all 0.8+ proposals were right, 0.75 and below were not)
@@ -153,8 +153,7 @@ def render(tpl, master, mapping):
         return
     answers, saved, proposals = ss["answers"], ss["saved_answers"], ss["ai_proposals"]
     done = sum(1 for c in queue if answers.get(c.index) and answers[c.index].mode != SKIP)
-    st.markdown(style.pill(f"{done} answered", "green") + style.pill(f"{len(queue) - done} left", "blue")
-                + style.pill(f"{len(saved)} saved from last time", "gray"), unsafe_allow_html=True)
+    layout.summary_line([(done, "answered"), (len(queue) - done, "left"), (len(saved), "saved from last time")])
     st.caption("Everything is pre-filled where possible. Change what is wrong, leave a row blank to skip it, then "
                "press Apply all answers. Nothing is used until you apply.")
 

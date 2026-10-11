@@ -25,15 +25,15 @@ def _run(tpl, rows):
 
 
 def _card(f):
-    bg, fg, border = layout.CHIP_TINTS[SEVERITY_TINT[f.severity]]
+    bg, fg, border = layout.tint(SEVERITY_TINT[f.severity])
     parts = [layout.chip(SEVERITY_LABEL[f.severity], SEVERITY_TINT[f.severity]),
              layout.chip(SOURCE_LABEL[f.source], "gray" if f.source == "template" else "amber")]
     body = f"<b>{html.escape(f.column) or 'Whole file'}</b> &mdash; {html.escape(f.issue)}"
     if f.suggestion:
-        body += f"<br><span style='color:#1d6b3f'>Suggestion: {html.escape(f.suggestion)}</span>"
+        body += f"<br><span style='color:var(--detail)'>Suggestion: {html.escape(f.suggestion)}</span>"
     if f.rule:
-        body += f"<br><i style='color:#51607a'>Template says: &ldquo;{html.escape(f.rule)}&rdquo;</i>"
-    st.markdown(f"<div style='background:{bg};border:1px solid {border};border-radius:10px;padding:12px 16px;"
+        body += f"<br><i style='color:var(--muted)'>Template says: &ldquo;{html.escape(f.rule)}&rdquo;</i>"
+    st.markdown(f"<div style='background:{bg};border:1px solid {border};border-radius:var(--radius);padding:12px 16px;"
                 f"margin:8px 0'>{''.join(parts)}<br>{body}</div>", unsafe_allow_html=True)
 
 

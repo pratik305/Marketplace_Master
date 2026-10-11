@@ -109,6 +109,16 @@ Build mode: fast
   Learner check: Go to the last step, run the AI review, read the findings, and say which ones are useful and which are noise.
   Commit: `Add AI review step`
 
+- [x] **11. Three switchable looks and the real product on screen**
+  Becomes usable: A Look switcher (Boutique, Sheet, Workshop) with flatter, plainer styling, and a product strip on every step after Upload showing the real photo, title, SKU, price and details with Prev / Next; problems name the real product.
+  Why now: Added after the learner said the site looked AI-made, liked all three directions and asked for the real product to be shown.
+  PRD ref: `prd.md > Looks and the real product on screen`
+  Spec ref: `spec.md > Looks and product strip`
+  Build: `ui/themes.py`, `ui/product_strip.py`, `ui/layout.py`, `ui/style.py`; photos in the Upload preview; real SKU and title in validation messages.
+  Verify (mechanical): `tests/test_look.py` checks the three looks, switching them, every step in every look, the strip (master, finished rows, browsing, parent photo) and the real SKU in problems; real-browser screenshots of each look were reviewed.
+  Learner check: Run the app, try each Look on the Check step, browse a few products with Next, and say which look your team prefers.
+  Commit: `Add three looks and the real product strip`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 3 (upload, download, and AI mapping)
@@ -145,3 +155,4 @@ Activity mode: not started
 - Answer sheet added as slice 8 — the learner found one-question-at-a-time too slow (about 95 questions) and accepted the recommendation of one pre-filled sheet, Claude proposals and answers remembered between runs; the earlier decision "one column per question" is replaced and the "saving answers across runs" item moves from Later into the build. Claude proposals are pre-filled only at 0.8+ confidence after a live comparison with the hand-filled file.
 - Four-step layout added as slice 9 — the learner asked for the site to look better and be easier to handle; the single long page became four short steps. No product decision changed.
 - AI review added as slice 10 — the learner asked for a last step validating the file with AI against the file's rules and regulations; the flow is now five steps. The live review showed the rules' Variation Theme `COLOR` was wrong for children that differ by ring size, so the rule became `COLOR/RING_SIZE` (the learner's earlier prompt said Size/Color). Live runs also exposed a reply cut off by the length limit, now handled.
+- Three switchable looks and the product strip added as slice 11 — the learner said the site looked AI-made, liked all three suggested directions (so they became a switcher instead of a single choice) and asked for the real product on screen. No product decision changed.

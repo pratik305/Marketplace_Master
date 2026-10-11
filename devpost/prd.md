@@ -52,6 +52,17 @@ Added after the learner asked for a final step where AI validates the file again
   - [ ] A reply cut off mid-finding still shows the complete findings.
   - [ ] Run against the learner's hand-filled file, the review finds real issues (expired sale dates, 0 mm dimensions, inconsistent stone details) and does not invent data.
 
+### Looks and the real product on screen
+Added after the learner said the site looked AI-made and liked three directions, and asked for the real product to be shown. Updates `Look and Feel`.
+- A **Look** switcher in the masthead with three looks: **Boutique** (ivory and ink, thin gold detail, serif headings), **Sheet** (compact and grid-like with a spreadsheet green) and **Workshop** (warm paper tones, deep green, serif headings and a hand-written note). Boutique is the default; the choice applies at once.
+- Plainer than before: a masthead and a hairline instead of a gradient banner, a quiet line of facts instead of pill chips, hairlines instead of shadowed cards, flat buttons.
+- A **product strip** on the Prepare, Answers, Check and AI review steps shows the real product: photo, title, SKU, price and key details, with Prev, Next and a product number to browse all rows. On Prepare and Answers it shows the master's data; on Check and AI review it shows the finished listing, with its first bullet points. A parent listing borrows its first variation's photo.
+- Validation problems name the real product ("First: SKU - title"), not only a row number, and the master preview on Upload shows the photos.
+- Acceptance criteria:
+  - [ ] Switching the Look changes colours, fonts and shapes on every step without errors.
+  - [ ] The strip shows the product's photo, title, SKU and price, and Next / Prev move through the rows.
+  - [ ] A "must fix" item shows the SKU and title of the first affected product.
+
 ### Four-step layout
 Changed after the learner asked for a better-looking, easier-to-handle site. Replaces the single long page in `Screens and Layout`.
 - A header banner, a clickable step bar with a progress line (**1 Upload, 2 Prepare, 3 Answers, 4 Check & download**; finished steps show a tick; steps after Upload unlock once the files are read) and summary chips (rows, columns filled by rules, columns mapped, answers given).
@@ -166,3 +177,6 @@ Remembering past answers per product category; bulk apply of rules; a history of
 
 ## Revision: AI review step
 - The learner asked for a last step where AI validates the file against the rules and regulations. The flow is now five steps (Upload, Prepare, Answers, Check, AI review & download). The review found that the rules' Variation Theme `COLOR` contradicted the data (children differ by colour and ring size), so the rule is now `COLOR/RING_SIZE`, matching the learner's original "Size/Color".
+
+## Revision: looks and the real product
+- The learner found the site looked AI-made and liked all three suggested directions (boutique, spreadsheet-native, workshop), so they became a switchable Look. Also: the real product is shown on screen.

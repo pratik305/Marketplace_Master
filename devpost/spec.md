@@ -75,6 +75,11 @@ One screen for every remaining column (`ui/answer_sheet.py`): a form with a tab 
 PRD ref: `prd.md > Answer sheet`.
 Files: `ui/answer_sheet.py`, `src/answer_store.py`, `src/ai.py`.
 
+### Looks and product strip
+`ui/themes.py` defines the three looks (colours, fonts, radius, status tints) and builds one stylesheet from CSS variables; web fonts come from Google Fonts with system fallbacks, so the app still works offline. `ui/layout.py` injects the current look (`st.session_state["theme"]`), draws the masthead with the Look switcher, and renders the summary line, step bar and navigation. `ui/style.py` builds the question cards from the look's tints. `ui/product_strip.py` shows one product with Prev / Next: from the master before any rule runs, from the finished rows on Check and AI review (bullets included), borrowing the first variation's photo for a parent. `ui/validation_page.py` names the first affected product in each problem.
+PRD ref: `prd.md > Looks and the real product on screen`.
+Files: `ui/themes.py`, `ui/layout.py`, `ui/style.py`, `ui/product_strip.py`.
+
 ### Page frame and steps
 `app.py` runs four steps (`st.session_state["step"]`): Upload (`ui/upload_page.py`), Prepare (`ui/rules_page.py` and `ui/mapping_page.py` in two tabs), Answers (`ui/answer_sheet.py`, or `ui/question_page.py` as an option) and Check & download (`ui/validation_page.py` plus the download button). `ui/layout.py` holds the light theme CSS, the header banner, the clickable step bar, summary chips and the Back / Continue buttons. The rules and mapping are computed on every step so the answer sheet and validation always know what was filled. Reading the files happens in a button callback (no manual reruns).
 PRD ref: `prd.md > Four-step layout`.
@@ -175,3 +180,6 @@ marketplace master/
 
 ## Revision: AI review step
 - Live check: on the learner's hand-filled file the review returned 16 findings in about 30 seconds (for example sale dates in 2017, item length/width/height of 0, Stone Clarity VS2-SI1 vs VS1 for the same stone, item weight equal to metal weight, no BIS hallmark information). Known noise: it also flags case differences such as `female` vs `Female`, which the file deliberately stores as Amazon's internal values.
+
+## Revision: looks and the real product
+- Checked with real-browser screenshots of each look. Two fixes came out of them: Streamlit's own paragraph and heading styles overrode the serif fonts until the selectors were made more specific, and the step bar's last label wrapped, so it became "AI review" (download stays on that step).

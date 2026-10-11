@@ -17,9 +17,23 @@ def _fix(col, tpl, master, mapping):
     ss["step"] = 3                             # and go back to the answers
 
 
-def _rows_text(rows, n=6):
+def _who(tpl, built_rows, row_number):
+    """The real product on a row: 'SKU - title', so a row number means something."""
+    from src.rules import find_column
+    i = row_number - tpl.data_row
+    if not (0 <= i < len(built_rows)):
+        return ""
+    sku, name = find_column(tpl, "SKU"), find_column(tpl, "Item Name")
+    parts = [str(built_rows[i].get(c.index, "")).strip() for c in (sku, name) if c]
+    parts = [p[:46] for p in parts if p]
+    return " - ".join(parts)
+
+
+def _rows_text(rows, tpl=None, built_rows=None, n=4):
     shown = ", ".join(str(r) for r in rows[:n])
-    return f"{len(rows)} rows (e.g. row {shown})" + ("" if len(rows) <= n else ", ...")
+    first = _who(tpl, built_rows, rows[0]) if tpl is not None and built_rows else ""
+    text = f"{len(rows)} rows (row {shown}" + ("" if len(rows) <= n else ", ...") + ")"
+    return text + (f". First: {first}" if first else "")
 
 
 def render(tpl, master, mapping, rows):
@@ -44,7 +58,7 @@ def render(tpl, master, mapping, rows):
             for n, issue in enumerate(group[:80]):
                 left, right = st.columns([5, 1])
                 left.markdown(f"**{issue.col.label}** ({issue.col.letter}) — {issue.message}  \n"
-                              f"{_rows_text(issue.rows)}")
+                              f"{_rows_text(issue.rows, tpl, rows)}")
                 right.button("Fix this", key=f"fix_{issue.severity}_{issue.col.index}_{n}",
                              on_click=_fix, args=(issue.col, tpl, master, mapping))
             if len(group) > 80:

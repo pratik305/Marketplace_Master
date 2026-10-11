@@ -8,7 +8,7 @@ import streamlit as st
 from src.ai import AIUnavailable, check_answers, get_client
 from src.questions import (CONST, LOOKUP, MAX_LOOKUP_VALUES, SKIP, Answer, build_queue, check_value,
                            distinct_values, gap_count)
-from ui import style
+from ui import layout, style
 
 SAME, DEPENDS = "Same for all rows", "Depends on a master column"
 CHOICE_BUTTONS_MAX = 8        # dropdown columns with this many options or fewer show as choice buttons
@@ -137,12 +137,10 @@ def _suggestion(tpl, col):
 
 
 def _status_chips(queue, answers):
-    """Soft-coloured counts: answered, skipped, still to do."""
+    """A quiet line: answered, skipped, still to do."""
     done = sum(1 for c in queue if answers.get(c.index) and answers[c.index].mode != SKIP)
     skipped = sum(1 for c in queue if answers.get(c.index) and answers[c.index].mode == SKIP)
-    todo = len(queue) - done - skipped
-    st.markdown(style.pill(f"{done} answered", "green") + style.pill(f"{skipped} skipped", "amber")
-                + style.pill(f"{todo} to do", "blue"), unsafe_allow_html=True)
+    layout.summary_line([(done, "answered"), (skipped, "skipped"), (len(queue) - done - skipped, "to do")])
 
 
 def render(tpl, master, mapping):

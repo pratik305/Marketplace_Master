@@ -9,6 +9,8 @@ Built for a listing team who fill these templates by hand for hundreds of produc
 ## How it works
 
 Five short steps, with a step bar at the top: **Upload, Prepare, Answers, Check, AI review & download**.
+The real product (photo, title, SKU, price) stays in view, and a **Look** switcher (Boutique, Sheet, Workshop)
+changes the colours and fonts.
 
 1. **Upload** the master sheet (`.xlsx`) and the Amazon template (`.xlsm`).
 2. **Rules** — built-in listing rules (`rules/amazon_in_jewellery.json`, editable) fill what your team
